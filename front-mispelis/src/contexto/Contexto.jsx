@@ -90,20 +90,7 @@ export const GlobalProvider = (props) => {
 
     // Elimina una peli "vista"
     const borrarVista = (id) => {
-        dispatch({ type: "BORRAR_VISTA", payload: id });
-
-        fetch(`http://localhost:4000/borrarpeli/${id}`, {
-            method: "DELETE"
-        })
-        .then(respuesta => {
-            if (respuesta.status === 204) {
-                dispatch({ type: "BORRAR_PELI", payload: id });
-            } else {
-                return respuesta.json().then(error => console.log(error));
-            }
-        })
-        .catch(error => console.log(error));
-        
+        dispatch({ type: "BORRAR_VISTA", payload: id });        
     };
 
     // Gestiona el login de usuarios y lo guarda a nivel local

@@ -68,8 +68,7 @@ export async function borrarPeli(id) {
         const db = conexion.db;
         const coleccion = db.collection("pelis");
 
-        coleccion.remove({_id: ObjectId(id)})
-        //const resultado = await coleccion.deleteOne({ _id: ObjectId(id) });
+        const resultado = await coleccion.deleteOne({ _id: ObjectId(id) });
 
         return resultado.deletedCount;
 
