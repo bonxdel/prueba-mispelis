@@ -61,7 +61,7 @@ export async function guardarPeli(peli) {
 // NO FUNCIONA!
 export function borrarPeli(id){
     return new Promise((ok, ko) => {
-        MongoClient.connect(URL)
+        MongoClient.connect(urlMongo)
         .then(conexion => {
             let coleccion = conexion.db("mispelis").collection("pelis");
 
