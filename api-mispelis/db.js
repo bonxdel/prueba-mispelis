@@ -59,24 +59,24 @@ export async function guardarPeli(peli) {
 
 
 // NO FUNCIONA!
-export function borrarPeli(id){
-    return new Promise((ok, ko) => {
-        MongoClient.connect(urlMongo)
-        .then(conexion => {
-            let coleccion = conexion.db("mispelis").collection("pelis");
+export async function borrarPeli(id) {
+    let cliente;
 
-            coleccion.deleteOne({ _id: new ObjectId(id) })
-            .then(({ deletedCount }) => {
-                conexion.close();
-                ok(deletedCount);
-            })
-            .catch(() => {
-                conexion.close();
-                ko({ error: "error en base de datos" });
-            });
-        })
-        .catch(() => {
-            ko({ error: "error en base de datos" });
-        });
-    });
+    try {
+        const conexion = await conectar();
+        cliente = conexion.cliente;
+        const db = conexion.db;
+        const coleccion = db.collection("pelis");
+
+        coleccion.remove({_id: ObjectId(id)})
+        //const resultado = await coleccion.deleteOne({ _id: ObjectId(id) });
+
+        return resultado.deletedCount;
+
+    } catch (error) {
+        console.error("❌ Error en borrarPeli:", error);
+        throw { error: "Error en base de datos" };
+    } finally {
+        if (cliente) await cliente.close();
+    }
 }

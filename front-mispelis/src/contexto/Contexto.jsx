@@ -95,14 +95,14 @@ export const GlobalProvider = (props) => {
         fetch(`http://localhost:4000/borrarpeli/${id}`, {
             method: "DELETE"
         })
-        .then(res => {
-            if (res.status === 204) {
+        .then(respuesta => {
+            if (respuesta.status === 204) {
                 dispatch({ type: "BORRAR_PELI", payload: id });
             } else {
-                return res.json().then(error => console.log(error));
+                return respuesta.json().then(error => console.log(error));
             }
         })
-        .catch(err => console.log(err));
+        .catch(error => console.log(error));
         
     };
 
