@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { MongoClient } from "mongodb";
-import { guardarPeli, borrarPeli } from "./db.js";
+import { MongoClient, ObjectId } from "mongodb";
+import { guardarPeli, borrarPeli, cambiarCategoria } from "./db.js";
 
 
 dotenv.config();
@@ -62,6 +62,7 @@ servidor.post("/pelivista", async (peticion, respuesta) => {
     try {
         const nueva = await guardarPeli(peli);
         respuesta.status(200).json(nueva);
+
     } catch (error) {
         respuesta.status(500).json({ error: "Error en el servidor" });
     }
@@ -69,17 +70,43 @@ servidor.post("/pelivista", async (peticion, respuesta) => {
 
 
 
-
-
-// NO FUNCIONA! genera un id "undefined"
-servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => {
+// Actualizar el tipo de una peli (favorita <-> vista)
+servidor.put("/cambiarcategoria/:id([0-9a-f]{24})", async (peticion, respuesta) => {
+    const { tipo } = peticion.body;
     const { id } = peticion.params;
-    console.log("ID recibido en el backend:", id);
+
+    const cliente = await MongoClient.connect(urlMongo);
+    const db = cliente.db("mispelis");
+    const coleccion = db.collection("pelis");
+
+    try {
+        const peliActualizada = await coleccion.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { tipo: tipo } }
+        );
+
+        if (peliActualizada.modifiedCount === 1) {
+            const peli = await coleccion.findOne({ _id: new ObjectId(id) });
+            console.log("Peli actualizada:", peli); // Agregar log para verificar
+            respuesta.json(peli);
+        } else {
+            respuesta.status(404).send("Película no encontrada");
+        }
+    } catch (error) {
+        console.error("Error al actualizar la categoría de la película:", error); // Agregar log de error
+        respuesta.status(500).send("Error al actualizar la categoría de la película");
+    }
+});
+
+
+// 
+servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => {    
+    const { id } = peticion.params;
     try {
         let count = await borrarPeli(id);
 
         if (count === 0) {
-            return respuesta.status(404).json({ error: "Pelicula no encontrada" });
+            return respuesta.status(404).json({ error: "Peli no encontrada" });
         }
 
         respuesta.status(204).send();

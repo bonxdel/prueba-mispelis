@@ -24,7 +24,7 @@ export async function guardarPeli(peli) {
 
         const existente = await coleccion.findOne({
             usuario: peli.usuario,
-            titulo: peli.title || peli.titulo,
+            title: peli.title || peli.titulo,
         });
 
         if (existente) {
@@ -37,7 +37,6 @@ export async function guardarPeli(peli) {
                 { $set: { tipo: nuevosTipos } }
             );
 
-            console.log("Película actualizada en la base de datos");
         } else {
             // Si no existe, insertamos la peli
             const resultado = await coleccion.insertOne(peli);
@@ -56,26 +55,58 @@ export async function guardarPeli(peli) {
 }
 
 
+// Función para cambiar la categoría de una peli (de "favorita" a "vista" o viceversa)
+export async function cambiarCategoria(peli) {
+    // Determinar el nuevo tipo basado en el tipo actual
+    const nuevoTipo = peli.tipo.includes("favorita") ? "vista" : "favorita"; 
 
+    // Despachar el cambio de categoría en el frontend
+    dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: [nuevoTipo] } });
 
-// NO FUNCIONA!
-export async function borrarPeli(id) {
-    let cliente;
+    if (estado.usuario) {
+        try {
+            // Hacer la petición PUT al servidor de forma asíncrona
+            const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                tipo: nuevoTipo, // Enviar solo el nuevo tipo, reemplazando el anterior
+                }),
+            });
 
-    try {
-        const conexion = await conectar();
-        cliente = conexion.cliente;
-        const db = conexion.db;
-        const coleccion = db.collection("pelis");
+            // Esperar a que la respuesta sea convertida a JSON
+            const datos = await respuesta.json();
 
-        const resultado = await coleccion.deleteOne({ _id: ObjectId(id) });
-
-        return resultado.deletedCount;
-
-    } catch (error) {
-        console.error("❌ Error en borrarPeli:", error);
-        throw { error: "Error en base de datos" };
-    } finally {
-        if (cliente) await cliente.close();
+            // Mostrar el resultado en consola y actualizar el estado
+            dispatch({ type: "MOVER_A_FAVS", payload: datos }); // Actualizamos el estado con los datos del backend
+        } catch (error) {
+            console.error("❌ Error al cambiar categoría de peli:", error);
+        }
     }
+}
+
+
+
+export async function borrarPeli(id){
+    return new Promise((ok, ko) => {
+        MongoClient.connect(urlMongo)
+        .then(conexion => {
+            let coleccion = conexion.db("mispelis").collection("pelis");
+
+            coleccion.deleteOne({ _id: new ObjectId(id) })
+            .then(({ deletedCount }) => {
+                conexion.close();
+                ok(deletedCount);
+            })
+            .catch(() => {
+                conexion.close();
+                ko({ error: "error en base de datos" });
+            });
+        })
+        .catch((error) => {
+            console.error("Error en la base de datos:", error);
+            conexion.close();
+            ko({ error: "error en base de datos" });
+        });
+    });
 }

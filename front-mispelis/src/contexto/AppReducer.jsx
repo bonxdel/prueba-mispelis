@@ -20,26 +20,30 @@ export default (estado, accion) => {
 
         // Acción para añadir una nueva peli a "vistas"
         case "NUEVA_VISTA":
-            return{
+            return {
                 ...estado,
-                favoritas: estado.favoritas.filter(peli => peli.id !== accion.payload.id), //elimina la peli de "favoritas"
-                vistas: [accion.payload, ...estado.vistas] //añade la peli a "vistas"
-            }
+                favoritas: estado.favoritas.filter(peli => peli.id !== accion.payload.id), // Elimina la peli de "favoritas"
+                vistas: [accion.payload, ...estado.vistas] // Añade la peli a "vistas"
+            };
+        
 
         // Acción para eliminar una peli de "vistas"
         case "BORRAR_VISTA":
             return{
                 ...estado,
-                vistas: estado.vistas.filter(peli => peli.id !== accion.payload) //filtra la categoría "vistas" eliminando la película con el ID seleccionado
+                vistas: estado.vistas.filter(peli => peli._id !== accion.payload) //filtra la categoría "vistas" eliminando la película con el ID seleccionado
             }
 
         // Acción para mover una peli de "vistas" a "favoritas"
         case "MOVER_A_FAVS":
             return {
                 ...estado,
-                vistas: estado.vistas.filter((peli) => peli.id !== accion.payload.id), //elimina la peli de "vistas"
-                favoritas: [accion.payload, ...estado.favoritas], //añade la peli a "favoritas"
-              };            
+                vistas: estado.vistas.filter((peli) => peli._id !== accion.payload._id), // Elimina la peli de "vistas"
+                favoritas: [
+                    ...estado.favoritas.filter((peli) => peli._id !== accion.payload._id), // Elimina si ya estaba en "favoritas"
+                    accion.payload, // Añade la peli a "favoritas"
+                ],
+            };         
 
               
         // Acción para guardar el usuario cuando inicia sesión

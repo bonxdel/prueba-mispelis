@@ -25,28 +25,54 @@ export const GlobalProvider = (props) => {
     }, [estado]);
 
     // Guarda una peli como "favorita"
-    const nuevaFav = (peli) => {
-        dispatch({ type: "NUEVA_FAV", payload: peli });
-    
-        if (estado.usuario) {
-            fetch("http://localhost:4000/pelifavorita", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...peli,
-                    usuario: estado.usuario,
-                    tipo: ["favorita"]
-                }),
-            })
-            .then(respuesta => respuesta.json())
-            .then(datos => console.log("✅ Peli guardada:", datos))
-            .catch(error => console.error("❌ Error al guardar peli:", error));
-        }
-    };
+// Guarda una peli como "favorita"
+// Guarda una peli como "favorita"
+const nuevaFav = (peli) => {
+    if (estado.usuario) {
+        fetch("http://localhost:4000/pelifavorita", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...peli,
+                usuario: estado.usuario,
+                tipo: "favorita",  // Se asegura de que tipo sea una cadena
+            }),
+        })
+        .then(respuesta => respuesta.json()) 
+        .then(datos => {
+            console.log("✅ Peli guardada:", datos);
+            dispatch({ type: "NUEVA_FAV", payload: datos });
+        })
+        .catch(error => {
+            console.error("❌ Error al guardar peli:", error);
+        });
+    }
+};
+
+// Añade una nueva peli a "vistas"
+const nuevaVista = (peli) => {
+    if (estado.usuario) {
+        fetch("http://localhost:4000/cambiarcategoria/" + peli._id, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                tipo: "vista"  // Solo un valor, no un array
+            }),
+        })
+        .then(respuesta => respuesta.json())
+        .then(datos => {
+            console.log("✅ Peli movida a vista:", datos);
+            dispatch({ type: "NUEVA_VISTA", payload: datos });
+        })
+        .catch(error => console.error("❌ Error al cambiar categoría de peli:", error));
+    }
+};
+
+
+
 
     // Elimina una peli de tipo "favoritas"
     const borrarFav = (id) => {
-        console.log(id);
         dispatch({ type: "BORRAR_FAV", payload: id });
 
         fetch(`http://localhost:4000/borrarpeli/${id}`, {
@@ -60,37 +86,55 @@ export const GlobalProvider = (props) => {
             }
         })
         .catch(error => console.log(error));
-        
     };
-    
-    // Añade una nueva peli a "vistas"
-    const nuevaVista = (peli) => {
-        dispatch({ type: "NUEVA_VISTA", payload: peli });
-    
-        if (estado.usuario) {
-            fetch("http://localhost:4000/pelivista", {
-                method: "POST",
+
+// Cambia el tipo de categoría de "vista" a "favorita"
+const cambiarCategoria = async (peli) => {
+    const nuevoTipo = peli.tipo.includes("favorita") ? "vista" : "favorita";
+
+    // Despachar el cambio de categoría en el frontend
+    dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: nuevoTipo } });
+
+    if (estado.usuario) {
+        try {
+            // Hacer la petición PUT al servidor de forma asíncrona
+            const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    ...peli,
-                    usuario: estado.usuario,
-                    tipo: ["vista"],  // Asegúrate de incluir "vista" como tipo
+                    tipo: nuevoTipo, // Enviar solo el nuevo tipo, NO un array
                 }),
-            })
-            .then(respuesta => respuesta.json())
-            .then(datos => console.log("✅ Peli guardada como vista:", datos))
-            .catch(error => console.error("❌ Error al guardar peli como vista:", error));
+            });
+
+            // Verificar si la respuesta es JSON
+            const datos = await respuesta.json().catch((e) => {
+                throw new Error('La respuesta no es un JSON válido');
+            });
+
+            console.log(`✅ Peli movida a ${nuevoTipo}:`, datos);
+            dispatch({ type: "MOVER_A_FAVS", payload: datos }); // Actualizamos el estado con los datos del backend
+        } catch (error) {
+            console.error("❌ Error al cambiar categoría de peli:", error);
         }
-    };
-    
-    // Cambia el tipo de categoría de "vista" a "favorita"
-    const cambiarCategoria = (peli) => {
-        dispatch({ type: "MOVER_A_FAVS", payload: peli });
-    };
+    }
+};
+
 
     // Elimina una peli "vista"
     const borrarVista = (id) => {
-        dispatch({ type: "BORRAR_VISTA", payload: id });        
+        dispatch({ type: "BORRAR_VISTA", payload: id });
+
+        fetch(`http://localhost:4000/borrarpeli/${id}`, {
+            method: "DELETE"
+        })
+        .then(respuesta => {
+            if (respuesta.status === 204) {
+                dispatch({ type: "BORRAR_VISTA", payload: id });
+            } else {
+                return respuesta.json().then(error => console.log(error));
+            }
+        })
+        .catch(error => console.log(error));
     };
 
     // Gestiona el login de usuarios y lo guarda a nivel local
