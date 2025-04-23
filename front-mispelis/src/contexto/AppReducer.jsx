@@ -3,7 +3,7 @@
 
 export default (estado, accion) => {
     switch(accion.type) {
-        
+
         // Acción para añadir una nueva peli a "favoritas"
         case "NUEVA_FAV":
             return{
@@ -45,6 +45,17 @@ export default (estado, accion) => {
                 ],
             };         
 
+
+        // Acción para mover una peli de "favoritas" a "vistas"
+        case "MOVER_A_VISTAS":
+            return {
+                ...estado,
+                favoritas: estado.favoritas.filter((peli) => peli._id !== accion.payload._id), // Elimina la peli de "favoritas"
+                vistas: [
+                    ...estado.vistas.filter((peli) => peli._id !== accion.payload._id), // Elimina si ya estaba en "vistas"
+                    accion.payload, // Añade la peli a "vistas"
+                ],
+            };         
               
         // Acción para guardar el usuario cuando inicia sesión
         case "LOGIN":

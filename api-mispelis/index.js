@@ -24,49 +24,86 @@ servidor.post("/login", async (peticion, respuesta) => {
 
         const encontrado = await usuarios.findOne({ usuario });
 
-        // Si no se encuentra el usuario, sale un aviso "Usuario no encontrado"
         if (!encontrado) {
-            return respuesta.status(401).json({ error: "Usuario no encontrado" });
+            return respuesta.status(400).json({ error: "Usuario no encontrado" });
         }
 
-        // Si la contraseña no coincide con la de la bd, sale el aviso "Contraseña incorrecta"
         if (encontrado.contraseña !== contraseña) {
-            return respuesta.status(401).json({ error: "Contraseña incorrecta" });
+            return respuesta.status(400).json({ error: "Contraseña incorrecta" });
         }
 
         conexion.close();
-        respuesta.json({ mensaje: "Acceso concedido" });
+        respuesta.json({ mensaje: "Acceso concedido", usuario: encontrado.usuario });
 
     } catch (error) {
         respuesta.status(500).json({ error: "Error en el servidor" });
     }
 });
+
+
+servidor.get("/mispelis", async (peticion, respuesta) => {
+    const { usuario } = peticion.body;
+
+    if (!usuario) {
+        return respuesta.status(400).json({ error: "Usuario no autenticado" });
+    }
+
+    try {
+        const conexion = await MongoClient.connect(urlMongo);
+        const baseDatos = conexion.db("mispelis");
+        const coleccion = baseDatos.collection("pelis");
+
+        const peliculas = await coleccion.find({ usuario }).toArray();
+        respuesta.json(peliculas);
+
+        conexion.close();
+    } catch (error) {
+        respuesta.status(500).json({ error: "Error en el servidor" });
+    }
+});
+
 
 
 // Añadir una peli con el tipo "favorita" a la bbdd
 servidor.post("/pelifavorita", async (peticion, respuesta) => {
     const peli = peticion.body;
+    const { usuario } = peticion.body; // Recibimos el usuario desde el cuerpo de la solicitud
+
+    if (!usuario) {
+        return respuesta.status(400).json({ error: "Usuario no autenticado" });
+    }
+
     try {
+        // Asocia la peli al usuario logueado
+        peli.usuario = usuario;
         const nueva = await guardarPeli(peli);
         respuesta.status(200).json(nueva);
-
     } catch (error) {
         respuesta.status(500).json({ error: "Error en el servidor" });
     }
 });
+
 
 
 // Añadir una peli con el tipo "vista" a la bbdd
 servidor.post("/pelivista", async (peticion, respuesta) => {
     const peli = peticion.body;
+    const { usuario } = peticion.body; // Recibimos el usuario desde el cuerpo de la solicitud
+
+    if (!usuario) {
+        return respuesta.status(400).json({ error: "Usuario no autenticado" });
+    }
+
     try {
+        // Asocia la peli al usuario logueado
+        peli.usuario = usuario;
         const nueva = await guardarPeli(peli);
         respuesta.status(200).json(nueva);
-
     } catch (error) {
         respuesta.status(500).json({ error: "Error en el servidor" });
     }
 });
+
 
 
 

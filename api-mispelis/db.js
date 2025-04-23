@@ -30,7 +30,6 @@ export async function guardarPeli(peli) {
         if (existente) {
             // Si la peli ya existe, actualizamos los tipos
             const nuevosTipos = Array.from(new Set([...existente.tipo, ...peli.tipo]));
-            console.log("Nuevos tipos:", nuevosTipos);
 
             await coleccion.updateOne(
                 { _id: existente._id },
@@ -47,7 +46,6 @@ export async function guardarPeli(peli) {
         return { mensaje: "Película guardada" };
 
     } catch (error) {
-        console.error("Error:", error);
         return { error: "Error al guardar la peli" };
     } finally {
         if (cliente) await cliente.close();
