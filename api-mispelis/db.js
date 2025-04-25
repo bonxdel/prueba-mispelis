@@ -11,6 +11,7 @@ async function conectar() {
     return { cliente, db };
 }
 
+
 // Exportación de la función asíncrona "guardarPeli" para usarla en el index.js
 // Permite guardar pelis en la bbdd de Mongo Atlas
 export async function guardarPeli(peli) {
@@ -81,6 +82,7 @@ export async function cambiarCategoria(peli) {
         }
     }
 }
+
 
 // Función para borrar pelis de la bd
 export async function borrarPeli(id){

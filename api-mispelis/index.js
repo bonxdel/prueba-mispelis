@@ -65,7 +65,6 @@ servidor.get("/mispelis", async (peticion, respuesta) => {
 });
 
 
-
 // Añadir una peli con el tipo "favorita" a la bbdd
 servidor.post("/pelifavorita", async (peticion, respuesta) => {
     const peli = peticion.body;

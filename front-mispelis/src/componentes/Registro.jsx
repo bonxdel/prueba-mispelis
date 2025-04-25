@@ -7,11 +7,28 @@ function Registro({ setUsuarioAutenticado }) {
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
 
+  // Función para validar el nombre de usuario y la contraseña
+  const validarCampo = (campo) => {
+    const regex = /^[a-zA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
+    return regex.test(campo);
+  };
+
   // La constante "registro" es la acción de crear el usuario, que accede al endpoint de nuestra API
   const registro = async (evento) => {
     evento.preventDefault();
     setError("");
     setExito("");
+
+    // Validar que el nombre de usuario y la contraseña cumplan con los requisitos
+    if (!validarCampo(usuario)) {
+      setError("El nombre de usuario solo puede contener letras, números, '-' y '_'.");
+      return;
+    }
+    
+    if (!validarCampo(pass)) {
+      setError("La contraseña solo puede contener letras, números, '-' y '_'.");
+      return;
+    }
 
     try {
       const respuesta = await fetch("http://localhost:4000/registro", {
