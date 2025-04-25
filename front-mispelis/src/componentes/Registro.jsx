@@ -9,8 +9,8 @@ function Registro({ setUsuarioAutenticado }) {
 
   // Función para validar el nombre de usuario y la contraseña
   const validarCampo = (campo) => {
-    const regex = /^[a-zA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
-    return regex.test(campo);
+    const caracteres = /^[a-zA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
+    return caracteres.test(campo);
   };
 
   // La constante "registro" es la acción de crear el usuario, que accede al endpoint de nuestra API
@@ -21,7 +21,7 @@ function Registro({ setUsuarioAutenticado }) {
 
     // Validar que el nombre de usuario y la contraseña cumplan con los requisitos
     if (!validarCampo(usuario)) {
-      setError("El nombre de usuario solo puede contener letras, números, '-' y '_'.");
+      setError("El nombre de usuario solo puede contener letras, números, '-' y '_'");
       return;
     }
     
