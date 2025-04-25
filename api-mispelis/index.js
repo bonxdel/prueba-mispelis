@@ -13,6 +13,7 @@ const servidor = express();
 servidor.use(cors());
 servidor.use(express.json());
 
+
 // Gestión del login de usuarios
 servidor.post("/login", async (peticion, respuesta) => {
     const { usuario, contraseña } = peticion.body;
@@ -41,6 +42,7 @@ servidor.post("/login", async (peticion, respuesta) => {
 });
 
 
+// Obtener las pelis del usuario
 servidor.get("/mispelis", async (peticion, respuesta) => {
     const { usuario } = peticion.body;
 
@@ -105,38 +107,27 @@ servidor.post("/pelivista", async (peticion, respuesta) => {
 });
 
 
-
-
 // Actualizar el tipo de una peli (favorita <-> vista)
 servidor.put("/cambiarcategoria/:id([0-9a-f]{24})", async (peticion, respuesta) => {
-    const { tipo } = peticion.body;
     const { id } = peticion.params;
-
-    const cliente = await MongoClient.connect(urlMongo);
-    const db = cliente.db("mispelis");
-    const coleccion = db.collection("pelis");
+    const { tipo } = peticion.body;
 
     try {
-        const peliActualizada = await coleccion.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: { tipo: tipo } }
-        );
+        const peli = await cambiarCategoria(id, tipo);
 
-        if (peliActualizada.modifiedCount === 1) {
-            const peli = await coleccion.findOne({ _id: new ObjectId(id) });
-            console.log("Peli actualizada:", peli); // Agregar log para verificar
+        if (peli) {
             respuesta.json(peli);
         } else {
-            respuesta.status(404).send("Película no encontrada");
+            respuesta.status(404).json({ error: "Película no encontrada" });
         }
     } catch (error) {
-        console.error("Error al actualizar la categoría de la película:", error); // Agregar log de error
-        respuesta.status(500).send("Error al actualizar la categoría de la película");
+        console.error("❌ Error en el servidor al cambiar la categoría:", error);
+        respuesta.status(500).json({ error: "Error en el servidor" });
     }
 });
 
 
-// 
+// Middleware para eliminar pelis de la bd
 servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => {    
     const { id } = peticion.params;
     try {
@@ -153,6 +144,34 @@ servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => 
 });
 
 
+// Crear un nuevo usuario
+servidor.post("/registro", async (peticion, respuesta) => {
+    const { usuario, contraseña } = peticion.body;
+
+    try {
+        const conexion = await MongoClient.connect(urlMongo);
+        const baseDatos = conexion.db("mispelis");
+        const usuarios = baseDatos.collection("usuariosmp");
+
+        // Verificamos si el usuario ya existe
+        const existente = await usuarios.findOne({ usuario });
+
+        if (existente) {
+            conexion.close();
+            return respuesta.status(400).json({ error: "Ese nombre de usuario ya existe" });
+        }
+
+        // Si no existe, lo insertamos
+        const resultado = await usuarios.insertOne({ usuario, contraseña });
+        conexion.close();
+
+        respuesta.status(201).json({ mensaje: "Usuario creado con éxito", usuario });
+
+    } catch (error) {
+        console.error("❌ Error en /registro:", error);
+        respuesta.status(500).json({ error: "Error al crear el usuario" });
+    }
+});
 
 
 servidor.listen(process.env.PORT);

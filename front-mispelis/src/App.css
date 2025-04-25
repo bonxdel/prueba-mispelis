@@ -108,6 +108,26 @@ header .nav-links li:last-child {
   margin-right: 0;
 }
 
+/* Contenedor principal de la página de registro */
+.pagina-registro{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Contenedor dentro de la página de registro que incluye los elementos para loggearse */
+.pagina-registro .contenedor{
+  max-width: 300px;
+  width: 100%;
+}
+
+/* Heading (título) de la página registro */
+.pagina-registro .heading {
+  color: white;
+  margin: 0;
+}
+
 /* Contenedor principal de la página de login */
 .pagina-login{
   display: flex;
@@ -118,7 +138,7 @@ header .nav-links li:last-child {
 
 /* Contenedor dentro de la página de login que incluye los elementos para loggearse */
 .pagina-login .contenedor{
-  max-width: 400px;
+  max-width: 300px;
   width: 100%;
 }
 
@@ -128,7 +148,17 @@ header .nav-links li:last-child {
   margin: 0;
 }
 
-/* Inputs del login */
+/* Texto de la página de login*/
+.pagina-login p{
+  color: white;
+}
+
+/* Botones de la página de login*/
+.pagina-login .btn{
+  margin-bottom: 15px;
+}
+
+/* Inputs del login y de registro */
 .campo {
   margin-top: 5px;
   margin-bottom: 15px;
@@ -302,16 +332,25 @@ header .nav-links li:last-child {
   margin: 0;
 }
 
+/* Hover de los botones de acción (cambio de color de los iconos) */
 .ctrl-btn:hover {
   color: var(--secundario);
   cursor: pointer;
 }
 
+/* Texto cuando no hay pelis registradas en las páginas "favoritas" y "vistas" */
 .pagina-pelis .no-pelis {
   color: #445566;
   font-size: 3rem;
   text-align: center;
 }
+
+
+
+
+
+
+
 
 /* Responsive */
 @media (min-width: 500px) {

@@ -42,7 +42,6 @@ export async function guardarPeli(peli) {
             peli._id = resultado.insertedId; // Aquí le asignamos el _id generado
             return peli; // Devolvemos el objeto peli completo con _id
         }
-
         return { mensaje: "Película guardada" };
 
     } catch (error) {
@@ -83,8 +82,7 @@ export async function cambiarCategoria(peli) {
     }
 }
 
-
-
+// Función para borrar pelis de la bd
 export async function borrarPeli(id){
     return new Promise((ok, ko) => {
         MongoClient.connect(urlMongo)

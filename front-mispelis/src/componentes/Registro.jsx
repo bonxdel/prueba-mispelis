@@ -1,21 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importamos useNavigate para redirigir
 
-// Este componente nos permite el acceso a la app, SIN un usuario autenticado NO PODEMOS ACCEDER
-function Login({ setUsuarioAutenticado }) {
+// Este componente nos permite registrar un nuevo usuario
+function Registro({ setUsuarioAutenticado }) {
   const [usuario, setUsuario] = useState("");
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Usamos useNavigate para redirigir
+  const [exito, setExito] = useState("");
 
-  // La constante "loggearse" es la acción del login, si accedemos al endpoint de nuestra API está autenticado
-  // Se establecen errores en caso de ser incorrectos usuario o contraseña y en caso de no poder conectarse al servidor
-  const loggearse = async (evento) => {
+  // La constante "registro" es la acción de crear el usuario, que accede al endpoint de nuestra API
+  const registro = async (evento) => {
     evento.preventDefault();
     setError("");
+    setExito("");
 
     try {
-      const respuesta = await fetch("http://localhost:4000/login", {
+      const respuesta = await fetch("http://localhost:4000/registro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usuario, contraseña: pass }),
@@ -24,12 +23,13 @@ function Login({ setUsuarioAutenticado }) {
       const datos = await respuesta.json();
 
       if (respuesta.ok) {
-        // Acceso correcto
-        setUsuarioAutenticado(true);
-        localStorage.setItem("usuario", usuario);
+        // Registro ok
+        setExito("¡Nueva cuenta creada!");
+        setUsuario("");
+        setPass("");
       } else {
-        // Error desde el backend por fallo de autenticación
-        setError(datos.error || "Usuario o contraseña incorrectos");
+        // Error desde el backend por problemas con el registro
+        setError(datos.error || "Error al registrar");
       }
     } catch (error) {
       // Error de conexión
@@ -37,16 +37,11 @@ function Login({ setUsuarioAutenticado }) {
     }
   };
 
-  // Función para redirigir al formulario de registro
-  const irARegistro = () => {
-    navigate("/registro"); // Redirige al componente Registro
-  };
-
   return (
-    <div className="pagina-login">
+    <div className="pagina-registro">
       <div className="contenedor">
-        <h1 className="heading">Iniciar sesión</h1>
-        <form onSubmit={loggearse}>
+        <h1 className="heading">Regístrate</h1>
+        <form onSubmit={registro}>
           <div className="campo">
             <label htmlFor="usuario">Nombre de usuario:</label>
             <input
@@ -68,12 +63,12 @@ function Login({ setUsuarioAutenticado }) {
             />
           </div>
           {error && <p style={{ color: "red" }}>{error}</p>}
-          <button className="btn" type="submit">Accede</button>
+          {exito && <p style={{ color: "green" }}>{exito}</p>}
+          <button className="btn" type="submit">Crear cuenta</button>
         </form>
-          <button onClick={irARegistro} className="btn">Regístrate</button>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Registro;
