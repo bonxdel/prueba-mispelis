@@ -1,5 +1,4 @@
 // AppReducer gestiona el estado de mi app según las acciones; permite leer el estado actual y actualizarlo
-// En este caso, lo utilizo para actualizar mis categorías de "favoritas" y "vistas" según las acciones que reciban
 
 export default (estado, accion) => {
     switch(accion.type) {
@@ -7,41 +6,52 @@ export default (estado, accion) => {
         // Acción para añadir una nueva peli a "favoritas"
         case "NUEVA_FAV":
             return{
-                ...estado, //se mantiene el estado anterior sin cambios
-                favoritas: [accion.payload, ...estado.favoritas] //añade la nueva peli a la categoría "favoritas"
+                // Se mantiene el estado anterior sin cambios
+                ...estado,
+                // Añade la nueva peli a la categoría "favoritas"
+                favoritas: [accion.payload, ...estado.favoritas]
             }
 
         // Acción para eliminar una peli de "favoritas"
         case "BORRAR_FAV":
             return{
+                // Se mantiene el estado anterior sin cambios
                 ...estado,
-                favoritas: estado.favoritas.filter(peli => peli._id !== accion.payload) //filtra la categoría "favoritas" eliminando la película con el ID seleccionado
+                // Filtra la categoría "favoritas" eliminando la película con el ID seleccionado
+                favoritas: estado.favoritas.filter(peli => peli._id !== accion.payload)
             }
 
         // Acción para añadir una nueva peli a "vistas"
         case "NUEVA_VISTA":
             return {
+                // Se mantiene el estado anterior sin cambios
                 ...estado,
-                favoritas: estado.favoritas.filter(peli => peli.id !== accion.payload.id), // Elimina la peli de "favoritas"
-                vistas: [accion.payload, ...estado.vistas] // Añade la peli a "vistas"
+                // Añade la peli a "vistas"
+                vistas: [accion.payload, ...estado.vistas]
             };
         
 
         // Acción para eliminar una peli de "vistas"
         case "BORRAR_VISTA":
             return{
+                // Se mantiene el estado anterior sin cambios
                 ...estado,
-                vistas: estado.vistas.filter(peli => peli._id !== accion.payload) //filtra la categoría "vistas" eliminando la película con el ID seleccionado
+                // Filtra la categoría "vistas" eliminando la película con el ID seleccionado
+                vistas: estado.vistas.filter(peli => peli._id !== accion.payload) 
             }
 
         // Acción para mover una peli de "vistas" a "favoritas"
         case "MOVER_A_FAVS":
             return {
+                // Se mantiene el estado anterior sin cambios
                 ...estado,
-                vistas: estado.vistas.filter((peli) => peli._id !== accion.payload._id), // Elimina la peli de "vistas"
+                // Elimina la peli de "vistas"
+                vistas: estado.vistas.filter((peli) => peli._id !== accion.payload._id),
                 favoritas: [
-                    ...estado.favoritas.filter((peli) => peli._id !== accion.payload._id), // Elimina si ya estaba en "favoritas"
-                    accion.payload, // Añade la peli a "favoritas"
+                    // Elimina si ya estaba en "favoritas"
+                    ...estado.favoritas.filter((peli) => peli._id !== accion.payload._id),
+                    // Añade la peli a "favoritas"
+                    accion.payload,
                 ],
             };         
 
@@ -49,19 +59,27 @@ export default (estado, accion) => {
         // Acción para mover una peli de "favoritas" a "vistas"
         case "MOVER_A_VISTAS":
             return {
+                // Se mantiene el estado anterior sin cambios
                 ...estado,
-                favoritas: estado.favoritas.filter((peli) => peli._id !== accion.payload._id), // Elimina la peli de "favoritas"
+                // Elimina la peli de "favoritas"
+                favoritas: estado.favoritas.filter((peli) => peli._id !== accion.payload._id),
                 vistas: [
-                    ...estado.vistas.filter((peli) => peli._id !== accion.payload._id), // Elimina si ya estaba en "vistas"
-                    accion.payload, // Añade la peli a "vistas"
+                    // Elimina si ya estaba en "vistas"
+                    ...estado.vistas.filter((peli) => peli._id !== accion.payload._id),
+                    // Añade la peli a "vistas"
+                    accion.payload,
                 ],
             };         
               
         // Acción para guardar el usuario cuando inicia sesión
         case "LOGIN":
             return {
+                // Se mantiene el estado anterior sin cambios
                 ...estado,
-                usuario: accion.payload
+                // Se obtiene el usuario
+                usuario: accion.payload,
+                favoritas: JSON.parse(localStorage.getItem("favoritas")) || [],
+                vistas: JSON.parse(localStorage.getItem("vistas")) || []
             }
       
 

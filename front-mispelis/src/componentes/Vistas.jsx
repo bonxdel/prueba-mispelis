@@ -11,24 +11,23 @@ function Vistas(){
     // SI NO HAY VISTAS: se muestra el texto "no hay pelis :("
     return(
         <div className="pagina-pelis">
-                <div className="contenedor">
-                    <div className="header">
-                        <h1 className="heading">Pelis vistas</h1>
-                    
-                        <span className="contador">{vistas.length} {vistas.length === 1 ? "peli" : "pelis"}</span>
-                    </div>
-    
-                    {vistas.length > 0 ? (
-                        <div className="galeria-pelis">
-                        {vistas.map((peli) => (
-                            <Cartel peli={peli} key={peli.id} tipo="vistas"/>
-                        ))}
-                    </div>) : (
-                        <h2 className="no-pelis">No hay pelis :(</h2>
-                    )}
-                    
+            <div className="contenedor">
+                <div className="header">
+                    <h1 className="heading">Pelis vistas</h1>
+                
+                    <span className="contador">{vistas.length} {vistas.length === 1 ? "peli" : "pelis"}</span>
                 </div>
-                </div>
+
+                {vistas.length > 0 ? (
+                    <div className="galeria-pelis">
+                    {vistas.map((peli) => (
+                        <Cartel peli={peli} key={peli.id} tipo="vistas"/>
+                    ))}
+                </div>) : (
+                    <h2 className="no-pelis">No hay pelis :(</h2>
+                )}
+            </div>
+        </div>
     )
 }
 

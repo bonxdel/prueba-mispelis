@@ -1,28 +1,37 @@
 import React, { createContext, useReducer, useEffect } from "react";
 import AppReducer from "./AppReducer";
 
+// Declaramos la constante que intenta obtener "usuario" (desde localStorage)
+// Si no existe, asigna null como valor
 const initialState = {
-    favoritas: localStorage.getItem("favoritas")
-        ? JSON.parse(localStorage.getItem("favoritas"))
-        : [],
-    vistas: localStorage.getItem("vistas")
-        ? JSON.parse(localStorage.getItem("vistas"))
-        : [],
     usuario: localStorage.getItem("usuario") || null,
-};
+    favoritas: JSON.parse(localStorage.getItem("favoritas")) || [],
+    vistas: JSON.parse(localStorage.getItem("vistas")) || [],
+  };
 
+// Crea un contexto global llamado "Contexto" con el estado inicial
+// Esto permite compartir datos entre componentes sin pasar los props de manera manual
 export const Contexto = createContext(initialState);
 
+// Proveedor global del contexto que gestiona el estado de la app y sus funciones
 export const GlobalProvider = (props) => {
+    // Se crea el estado global usando useReducer, basado en AppReducer y el estado inicial
     const [estado, dispatch] = useReducer(AppReducer, initialState);
 
     useEffect(() => {
+        // Si hay un usuario logueado, se guardan sus datos en localStorage
         if (estado.usuario) {
             localStorage.setItem("favoritas", JSON.stringify(estado.favoritas));
             localStorage.setItem("vistas", JSON.stringify(estado.vistas));
             localStorage.setItem("usuario", estado.usuario);
         }
     }, [estado]);
+
+    // Gestiona el login de usuarios y lo guarda a nivel local
+    const loginUsuario = (usuario) => {
+        dispatch({ type: "LOGIN", payload: usuario });
+        localStorage.setItem("usuario", usuario); 
+    };
 
     // Guarda una peli como "favorita"
     const nuevaFav = (peli) => {
@@ -38,7 +47,6 @@ export const GlobalProvider = (props) => {
             })
             .then(respuesta => respuesta.json()) 
             .then(datos => {
-                console.log("✅ Peli guardada:", datos);
                 dispatch({ type: "NUEVA_FAV", payload: datos });
             })
             .catch(error => {
@@ -61,7 +69,6 @@ export const GlobalProvider = (props) => {
             })
             .then(respuesta => respuesta.json()) 
             .then(datos => {
-                console.log("✅ Peli guardada:", datos);
                 dispatch({ type: "NUEVA_VISTA", payload: datos });
             })
             .catch(error => {
@@ -70,12 +77,12 @@ export const GlobalProvider = (props) => {
         }
     };
 
-
-
     // Elimina una peli de tipo "favoritas"
     const borrarFav = (id) => {
+        // Se despacha acción para quitarla del estado
         dispatch({ type: "BORRAR_FAV", payload: id });
 
+        // También se elimina del backend
         fetch(`http://localhost:4000/borrarpeli/${id}`, {
             method: "DELETE"
         })
@@ -89,11 +96,30 @@ export const GlobalProvider = (props) => {
         .catch(error => console.log(error));
     };
 
+    // Elimina una peli "vista"
+    const borrarVista = (id) => {
+        // Se despacha acción para quitarla del estado
+        dispatch({ type: "BORRAR_VISTA", payload: id });
+
+        // También se elimina del backend
+        fetch(`http://localhost:4000/borrarpeli/${id}`, {
+            method: "DELETE"
+        })
+        .then(respuesta => {
+            if (respuesta.status === 204) {
+                dispatch({ type: "BORRAR_VISTA", payload: id });
+            } else {
+                return respuesta.json().then(error => console.log(error));
+            }
+        })
+        .catch(error => console.log(error));
+    };
+
     // Cambia el tipo de categoría de "vista" a "favorita"
     const vistaToFav = async (peli) => {
         const nuevoTipo = peli.tipo.includes("favorita") ? "vista" : "favorita";
 
-        // Despachar el cambio de categoría en el frontend
+        // Se gestiona el cambio de categoría en el frontend
         dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: nuevoTipo } });
 
         if (estado.usuario) {
@@ -112,8 +138,8 @@ export const GlobalProvider = (props) => {
                     throw new Error('La respuesta no es un JSON válido');
                 });
 
-                console.log(`✅ Peli movida a ${nuevoTipo}:`, datos);
-                dispatch({ type: "MOVER_A_FAVS", payload: datos }); // Actualizamos el estado con los datos del backend
+                // Actualizamos el estado con los datos del backend
+                dispatch({ type: "MOVER_A_FAVS", payload: datos }); 
             } catch (error) {
                 console.error("❌ Error al cambiar categoría de peli:", error);
             }
@@ -124,7 +150,7 @@ export const GlobalProvider = (props) => {
     const favToVista = async (peli) => {
         const nuevoTipo = peli.tipo.includes("vista") ? "favorita" : "vista";
 
-        // Despachar el cambio de categoría en el frontend
+        // Se gestiona el cambio de categoría en el frontend
         dispatch({ type: "MOVER_A_VISTAS", payload: { ...peli, tipo: nuevoTipo } });
 
         if (estado.usuario) {
@@ -143,37 +169,15 @@ export const GlobalProvider = (props) => {
                     throw new Error('La respuesta no es un JSON válido');
                 });
 
-                console.log(`✅ Peli movida a ${nuevoTipo}:`, datos);
-                dispatch({ type: "MOVER_A_VISTAS", payload: datos }); // Actualizamos el estado con los datos del backend
+                // Actualizamos el estado con los datos del backend
+                dispatch({ type: "MOVER_A_VISTAS", payload: datos }); 
             } catch (error) {
                 console.error("❌ Error al cambiar categoría de peli:", error);
             }
         }
     };
 
-    // Elimina una peli "vista"
-    const borrarVista = (id) => {
-        dispatch({ type: "BORRAR_VISTA", payload: id });
-
-        fetch(`http://localhost:4000/borrarpeli/${id}`, {
-            method: "DELETE"
-        })
-        .then(respuesta => {
-            if (respuesta.status === 204) {
-                dispatch({ type: "BORRAR_VISTA", payload: id });
-            } else {
-                return respuesta.json().then(error => console.log(error));
-            }
-        })
-        .catch(error => console.log(error));
-    };
-
-    // Gestiona el login de usuarios y lo guarda a nivel local
-    const loginUsuario = (usuario) => {
-        dispatch({ type: "LOGIN", payload: usuario });
-        localStorage.setItem("usuario", usuario); 
-    };
-
+    // Devuelve el proveedor del contexto, que comparte estado y funciones globalmente
     return (
         <Contexto.Provider
             value={{

@@ -1,10 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 
+/* Se utiliza para generar variables globales en CSS, en este caso, de colores */
 :root {
-  --primary: #14181C;
-  --secondary: #FFB140;
+  --principal: #14181C;
+  --secundario: #FFB140;
 }
 
+/* Valores del body: padding, margen, tipografía y color de fondo */
 body {
   font-family: "Outfit", sans-serif;
   padding: 0;
@@ -12,6 +14,7 @@ body {
   background: #1D242A;
 }
 
+/* Valores del div "contenedor" */
 .contenedor {
   padding-right: 15px;
   padding-left: 15px;
@@ -25,10 +28,11 @@ body {
   box-sizing: border-box;
 }
 
+/* Valores de la clase "btn" aplicada a botones */
 .btn {
   padding: 10px 15px;
-  background-color: var(--secondary);
-  color: var(--primary);
+  background-color: var(--secundario);
+  color: var(--principal);
   border-radius: 5px;
   text-transform: uppercase;
   font-weight: 700;
@@ -39,21 +43,25 @@ body {
   line-height: 1.1;
 }
 
+/* Valores de hover en los botones con la clase "btn" */
 .btn:hover {
-  background-color: var(--secondary);
+  background-color: var(--secundario);
   opacity: 1;
   cursor: pointer;
 }
 
+/* Valores de "btn" cuando está desactivado */
 .btn:disabled {
   pointer-events: none;
   opacity: 0.5;
 }
 
+/* Color de fondo del header */
 header {
-  background-color: var(--primary);
+  background-color: var(--principal);
 }
 
+/* Características del contenido incluido en el header */
 header .contenido-header {
   display: flex;
   justify-content: space-between;
@@ -61,6 +69,7 @@ header .contenido-header {
   padding: 10px 0;
 }
 
+/* Valores de lo enlaces del header */
 header a {
   color: white;
   font-size: 1.25rem;
@@ -68,15 +77,18 @@ header a {
   transition: all 0.3s ease;
 }
 
+/* Hover en los enlaces del header */
 header a:hover {
   opacity: 0.7;
 }
 
+/* Información sobre el nombre de la app en el header */
 header .nombre-app a {
   font-weight: 700;
   font-size: 2rem;
 }
 
+/* Navegación en el header */
 header .nav-links {
   padding: 0;
   margin: 0;
@@ -85,46 +97,87 @@ header .nav-links {
   align-items: center;
 }
 
+/* Display y márgenes de los elementos de la navegación en el header */
 header .nav-links li {
   display: inline-block;
   margin-right: 30px;
 }
 
+/* Último elemento de la navegación del header */
 header .nav-links li:last-child {
   margin-right: 0;
 }
 
+/* Contenedor principal de la página de login */
+.pagina-login{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Contenedor dentro de la página de login que incluye los elementos para loggearse */
+.pagina-login .contenedor{
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Heading (título) de la página Login */
+.pagina-login .heading {
+  color: white;
+  margin: 0;
+}
+
+/* Inputs del login */
+.campo {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  color: white;
+}
+
+/* Texto de cada input (usuario y contraseña) */
+.campo label{
+  display: flex;
+  margin-bottom: 10px;
+}
+
+/* Contenedor del buscador */
 .buscar-pelis {
   padding: 50px 0;
   max-width: 600px;
   margin: 0 auto;
 }
 
+/* Input del buscador */
 .buscar-pelis .buscador input {
   width: 100%;
   background-color: white;
   padding: 10px;
   border-radius: 5px;
   border: none;
-  color: var(--primary);
+  color: var(--principal);
   font-size: 1.25rem;
 }
 
+/* Resultados mostrados en el buscador */
 .resultados {
   padding: 0;
   margin: 0;
   margin-top: 20px;
 }
 
+/* Resultados mostrados en lista */
 .resultados li {
   list-style: none;
 }
 
+/* Cartel de peli mostrado como resultado del buscador */
 .cartel-buscador {
   display: flex;
   margin-bottom: 20px;
 }
 
+/* Info sobre la imagen mostrada como resultado (o la "no imagen" en caso de no haberla) */
 .cartel-buscador .contenedor-cartel img,
 .cartel-inexistente {
   width: 75px;
@@ -136,12 +189,14 @@ header .nav-links li:last-child {
   color: transparent;
 }
 
+/* Contenedor de la info de las pelis resultado del buscador */
 .cartel-buscador .info {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
+/* Título de la peli mostrada como resultado del buscador */
 .cartel-buscador .info .titulo-peli {
   font-size: 1.25rem;
   color: white;
@@ -149,6 +204,7 @@ header .nav-links li:last-child {
   margin: 0;
 }
 
+/* Fecha de estreno de la peli mostrada como resultado del buscador */
 .cartel-buscador .info .fecha-estreno {
   font-size: 1.25rem;
   font-weight: 300;
@@ -156,14 +212,17 @@ header .nav-links li:last-child {
   margin: 0;
 }
 
+/* Márgenes entre los botones usados en los resultados del buscador */
 .cartel-buscador .controles-buscador button {
   margin-right: 10px;
 }
 
+/* Contenedor de las páginas donde se muestran las pelis (Favoritas y Vistas) */
 .pagina-pelis {
   padding: 30px 0;
 }
 
+/* Header en las páginas Favoritas y Vistas que incluye heading y contador */
 .pagina-pelis .header {
   display: flex;
   align-items: center;
@@ -171,54 +230,31 @@ header .nav-links li:last-child {
   margin-bottom: 30px;
 }
 
-.contador {
-  display: block;
-  background-color: var(--secondary);
-  padding: 5px 15px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border-radius: 999px;
-  color: var(--primary);
-}
-
-.pagina-login{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.pagina-login .contenedor{
-  max-width: 400px;
-  width: 100%;
-}
-
-.pagina-login .heading {
-  color: white;
-  margin: 0;
-}
-
-.campo {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  color: white;
-}
-
-.campo label{
-  margin-right: 10px;
-}
-
+/* Heading (título) de las páginas Favoritas y Vistas */
 .pagina-pelis .heading {
   color: white;
   margin: 0;
 }
 
+/* Contador de películas en ambas categorías */
+.contador {
+  display: block;
+  background-color: var(--secundario);
+  padding: 5px 15px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 999px;
+  color: var(--principal);
+}
+
+/* Galería que muestra los carteles de cada peli en cada categoría*/
 .galeria-pelis {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 30px;
 }
 
+/* Div del cartel de las pelis */
 .cartel {
   width: 100%;
   border-radius: 8px;
@@ -228,12 +264,14 @@ header .nav-links li:last-child {
   display: block;
 }
 
+/* Info sobre la imagen dentro del div del cartel */
 .cartel img {
   width: 100%;
   min-height: 300px;
   display: block;
 }
 
+/* Contenedor de los botones de acción sobre los carteles de las pelis */
 .cartel .controles-pelis {
   display: inline;
   background-color: red;
@@ -248,12 +286,14 @@ header .nav-links li:last-child {
   transition: all 0.3s ease;
 }
 
+/* Hover sobre los botones de acción */
 .cartel:hover .controles-pelis {
   opacity: 1;
 }
 
+/* Info sobre los botones de acción */
 .ctrl-btn {
-  color: #fefefe;
+  color: white;
   background-color: transparent;
   border: none;
   transition: all 0.3s ease;
@@ -263,7 +303,7 @@ header .nav-links li:last-child {
 }
 
 .ctrl-btn:hover {
-  color: var(--secondary);
+  color: var(--secundario);
   cursor: pointer;
 }
 
@@ -273,12 +313,7 @@ header .nav-links li:last-child {
   text-align: center;
 }
 
-
-
-
-
-
-
+/* Responsive */
 @media (min-width: 500px) {
   .contenedor {
     width: 450px;

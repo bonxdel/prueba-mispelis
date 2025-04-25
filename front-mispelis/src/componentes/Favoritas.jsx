@@ -16,7 +16,6 @@ function Favoritas(){
                     <h1 className="heading">Mis favoritas</h1>
 
                     <span className="contador">{favoritas.length} {favoritas.length === 1 ? "peli" : "pelis"}</span>
-
                 </div>
 
                 {favoritas.length > 0 ? (
@@ -27,7 +26,6 @@ function Favoritas(){
                 </div>) : (
                     <h2 className="no-pelis">No hay pelis :(</h2>
                 )}
-                
             </div>
         </div>
     )
