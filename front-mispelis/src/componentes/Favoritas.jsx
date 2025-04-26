@@ -1,10 +1,16 @@
-import React, { useContext } from "react"
+import React, { useContext, useEffect } from "react"
 import { Contexto } from "../contexto/Contexto"
 import { Cartel } from "./Cartel"
 
 function Favoritas(){
     // Se invoca la constante "favoritas" del contexto global
-    const {favoritas} = useContext(Contexto)
+    const {favoritas, cargarFavoritas, usuario} = useContext(Contexto)
+
+    useEffect(() => {
+        if (usuario) {
+            cargarFavoritas(usuario);
+        }
+    }, [usuario, cargarFavoritas]); // Esto se ejecuta cuando haya usuario disponible
 
     // Devuelve la página "mis favoritas" con un header y un contador que muestra cuántas pelis hay guardadas
     // SI HAY FAVORITAS: se muestra el div "galeria-pelis" con los carteles de las pelis guardadas en favoritas

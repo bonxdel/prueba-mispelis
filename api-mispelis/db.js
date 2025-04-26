@@ -75,7 +75,7 @@ export async function cambiarCategoria(peli) {
             const datos = await respuesta.json();
 
             // Mostrar el resultado en consola y actualizar el estado
-            dispatch({ type: "MOVER_A_FAVS", payload: datos }); // Actualizamos el estado con los datos del backend
+            dispatch({ type: "MOVER_A_FAVS", payload: datos });
         } catch (error) {
             console.error("❌ Error al cambiar categoría de peli:", error);
         }

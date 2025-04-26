@@ -355,9 +355,8 @@ header .nav-links li:last-child {
 
 
 
+/*     RESPONSIVE     */
 
-
-/* Responsive */
 @media (min-width: 500px) {
   .contenedor {
     width: 450px;
@@ -367,7 +366,7 @@ header .nav-links li:last-child {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 770px) {
   .contenedor {
     width: 750px;
   }
@@ -376,7 +375,7 @@ header .nav-links li:last-child {
   }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 990px) {
   .contenedor {
     width: 970px;
   }
@@ -387,7 +386,7 @@ header .nav-links li:last-child {
 
 @media (min-width: 1200px) {
   .contenedor {
-    width: 1170px;
+    width: 1180px;
   }
   .galeria-pelis {
     grid-template-columns: repeat(5, 1fr);

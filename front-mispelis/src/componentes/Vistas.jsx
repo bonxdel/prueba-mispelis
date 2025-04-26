@@ -1,10 +1,16 @@
-import React, { useContext } from "react"
+import React, { useContext, useEffect } from "react"
 import { Contexto } from "../contexto/Contexto"
 import { Cartel } from "./Cartel"
 
 function Vistas(){
     // Se invoca la constante "vistas" del contexto global
-    const {vistas} = useContext(Contexto)
+    const {vistas, cargarVistas, usuario} = useContext(Contexto)
+
+    useEffect(() => {
+        if (usuario) {
+            cargarVistas(usuario);
+        }
+    }, [usuario, cargarVistas]); // Se ejecuta cuando haya usuario disponible
 
     // Devuelve la página "pelis vistas" con un header y un contador que muestra cuántas pelis hay guardadas
     // SI HAY VISTAS: se muestra el div "galeria-pelis" con los carteles de las pelis guardadas en vistas

@@ -12,7 +12,7 @@ function Registro({ setUsuarioAutenticado }) {
 
   // Función para validar el nombre de usuario y la contraseña
   const validarCampo = (campo) => {
-    const caracteres = /^[a-zA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
+    const caracteres = /^[a-zñA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
     return caracteres.test(campo);
   };
   

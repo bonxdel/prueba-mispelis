@@ -28,10 +28,21 @@ export const GlobalProvider = (props) => {
     }, [estado]);
 
     // Gestiona el login de usuarios y lo guarda a nivel local
-    const loginUsuario = (usuario) => {
+    const loginUsuario = async (usuario) => {
+        // Limpiar los datos anteriores de localStorage
+        localStorage.removeItem("favoritas");
+        localStorage.removeItem("vistas");
+        localStorage.removeItem("usuario");
+    
+        // Guardamos los datos del nuevo usuario
         dispatch({ type: "LOGIN", payload: usuario });
-        localStorage.setItem("usuario", usuario); 
+        localStorage.setItem("usuario", usuario);
+    
+        // Cargamos las películas de este usuario
+        await cargarFavoritas(usuario);
+        await cargarVistas(usuario);
     };
+    
 
     // Guarda una peli como "favorita"
     const nuevaFav = (peli) => {
@@ -177,6 +188,33 @@ export const GlobalProvider = (props) => {
         }
     };
 
+    // Cargar las pelis favoritas del usuario desde el backend
+    const cargarFavoritas = async (usuario) => {
+        if (usuario) {
+            try {
+                const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/favorita`);
+                const datos = await respuesta.json();
+                dispatch({ type: "CARGAR_FAVORITAS", payload: datos });
+            } catch (error) {
+                console.error("❌ Error cargando favoritas:", error);
+            }
+        }
+    };
+    
+    // Cargar las pelis vistas del usuario desde el backend
+    const cargarVistas = async (usuario) => {
+        if (usuario) {
+            try {
+                const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/vista`);
+                const datos = await respuesta.json();
+                dispatch({ type: "CARGAR_VISTAS", payload: datos });
+            } catch (error) {
+                console.error("❌ Error cargando vistas:", error);
+            }
+        }
+    };
+
+
     // Devuelve el proveedor del contexto, que comparte estado y funciones globalmente
     return (
         <Contexto.Provider
@@ -184,13 +222,15 @@ export const GlobalProvider = (props) => {
                 favoritas: estado.favoritas,
                 vistas: estado.vistas,
                 usuario: estado.usuario,
+                loginUsuario,
                 nuevaFav,
-                borrarFav,
                 nuevaVista,
+                borrarFav,
+                borrarVista,
                 vistaToFav,
                 favToVista,
-                borrarVista,
-                loginUsuario
+                cargarFavoritas,
+                cargarVistas
             }}
         >
             {props.children}

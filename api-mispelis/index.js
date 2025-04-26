@@ -43,8 +43,9 @@ servidor.post("/login", async (peticion, respuesta) => {
 
 
 // Obtener las pelis del usuario
-servidor.get("/mispelis", async (peticion, respuesta) => {
-    const { usuario } = peticion.body;
+servidor.get("/mispelis/:usuario/:tipo", async (peticion, respuesta) => {
+    const usuario = peticion.params.usuario;
+    const tipo = peticion.params.tipo;
 
     if (!usuario) {
         return respuesta.status(400).json({ error: "Usuario no autenticado" });
@@ -55,7 +56,7 @@ servidor.get("/mispelis", async (peticion, respuesta) => {
         const baseDatos = conexion.db("mispelis");
         const coleccion = baseDatos.collection("pelis");
 
-        const peliculas = await coleccion.find({ usuario }).toArray();
+        const peliculas = await coleccion.find({ usuario: usuario, tipo: tipo }).toArray();
         respuesta.json(peliculas);
 
         conexion.close();
@@ -122,7 +123,6 @@ servidor.put("/cambiarcategoria/:id([0-9a-f]{24})", async (peticion, respuesta) 
     
             if (peliActualizada.modifiedCount === 1) {
                 const peli = await coleccion.findOne({ _id: new ObjectId(id) });
-                console.log("Peli actualizada:", peli); // Agregar log para verificar
                 respuesta.json(peli);
             } else {
                 respuesta.status(404).send("Película no encontrada");        

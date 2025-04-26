@@ -81,6 +81,17 @@ export default (estado, accion) => {
                 favoritas: JSON.parse(localStorage.getItem("favoritas")) || [],
                 vistas: JSON.parse(localStorage.getItem("vistas")) || []
             }
+
+        case "CARGAR_FAVORITAS":
+            return {
+                ...estado,
+                favoritas: accion.payload,
+            };
+        case "CARGAR_VISTAS":
+            return {
+                ...estado,
+                vistas: accion.payload,
+            };    
       
 
         // En caso de no hacer ninguna acción, se devuelve el estado actual              
