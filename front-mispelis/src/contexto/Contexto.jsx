@@ -5,9 +5,9 @@ import AppReducer from "./AppReducer";
 // Si no existe, asigna null como valor
 const initialState = {
     usuario: localStorage.getItem("usuario") || null,
-    favoritas: JSON.parse(localStorage.getItem("favoritas")) || [],
-    vistas: JSON.parse(localStorage.getItem("vistas")) || [],
-  };
+    favoritas: [],
+    vistas: [],
+};
 
 // Crea un contexto global llamado "Contexto" con el estado inicial
 // Esto permite compartir datos entre componentes sin pasar los props de manera manual
@@ -19,40 +19,38 @@ export const GlobalProvider = (props) => {
     const [estado, dispatch] = useReducer(AppReducer, initialState);
 
     useEffect(() => {
-        // Si hay un usuario logueado, se guardan sus datos en localStorage
-        if (estado.usuario) {
-            localStorage.setItem("favoritas", JSON.stringify(estado.favoritas));
-            localStorage.setItem("vistas", JSON.stringify(estado.vistas));
-            localStorage.setItem("usuario", estado.usuario);
-        } else {
-            // El usuario está vacío, lo que significa que el localStorage debería resetearse
-            localStorage.removeItem("favoritas");
-            localStorage.removeItem("vistas");
-            localStorage.removeItem("usuario");
+        // Verificar si los datos están en localStorage al cargar la app
+        console.log("Usuario desde localStorage:", localStorage.getItem("usuario"));
+        console.log("Favoritas desde localStorage:", localStorage.getItem("favoritas"));
+        console.log("Vistas desde localStorage:", localStorage.getItem("vistas"));
+        
+        // Si hay un usuario en localStorage, actualiza el estado y carga las películas
+        const usuario = localStorage.getItem("usuario");
+        if (usuario) {
+            dispatch({ type: "LOGIN", payload: usuario });
+            cargarFavoritas(usuario);
+            cargarVistas(usuario);
         }
-    }, [estado.usuario]); // Solo se ejecuta cuando cambia el usuario
+}, []);
 
-    
     // Gestiona el login de usuarios y lo guarda a nivel local
     const loginUsuario = async (usuario) => {
-    // Limpiar los datos anteriores de localStorage
-    console.log("Limpiando localStorage...");
-    localStorage.removeItem("favoritas");
-    localStorage.removeItem("vistas");
-    localStorage.removeItem("usuario");
+        // Limpiar los datos anteriores
+        localStorage.removeItem("favoritas");
+        localStorage.removeItem("vistas");
+        localStorage.removeItem("usuario");
 
-    // Limpiar las listas de películas en el estado global
-    dispatch({ type: "CARGAR_FAVORITAS", payload: [] });
-    dispatch({ type: "CARGAR_VISTAS", payload: [] });
+        // Guardar el nuevo usuario en localStorage
+        localStorage.setItem("usuario", usuario);
 
-    // Guardamos los datos del nuevo usuario
-    dispatch({ type: "LOGIN", payload: usuario });
-    localStorage.setItem("usuario", usuario);
+        // Actualizar el estado (esto resetea favoritas y vistas también)
+        dispatch({ type: "LOGIN", payload: usuario });
 
-    // Cargamos las películas de este usuario
-    await cargarFavoritas(usuario);
-    await cargarVistas(usuario);
-};
+        // Ahora recargar desde el backend
+        await cargarFavoritas(usuario);
+        await cargarVistas(usuario);
+    };
+        
 
     // Guarda una peli como "favorita"
     const nuevaFav = (peli) => {
@@ -76,6 +74,7 @@ export const GlobalProvider = (props) => {
         }
     };
 
+
     // Añade una nueva peli a "vistas"
     const nuevaVista = (peli) => {
         if (estado.usuario) {
@@ -98,6 +97,7 @@ export const GlobalProvider = (props) => {
         }
     };
 
+
     // Elimina una peli de tipo "favoritas"
     const borrarFav = (id) => {
         // Se despacha acción para quitarla del estado
@@ -117,6 +117,7 @@ export const GlobalProvider = (props) => {
         .catch(error => console.log(error));
     };
 
+
     // Elimina una peli "vista"
     const borrarVista = (id) => {
         // Se despacha acción para quitarla del estado
@@ -135,6 +136,7 @@ export const GlobalProvider = (props) => {
         })
         .catch(error => console.log(error));
     };
+
 
     // Cambia el tipo de categoría de "vista" a "favorita"
     const vistaToFav = async (peli) => {
@@ -167,6 +169,7 @@ export const GlobalProvider = (props) => {
         }
     };
 
+
     // Cambia el tipo de categoría de "favorita" a "vista"
     const favToVista = async (peli) => {
         const nuevoTipo = peli.tipo.includes("vista") ? "favorita" : "vista";
@@ -198,6 +201,7 @@ export const GlobalProvider = (props) => {
         }
     };
 
+
     // Cargar las pelis favoritas del usuario desde el backend
     const cargarFavoritas = async (usuario) => {
         if (usuario) {
@@ -210,7 +214,8 @@ export const GlobalProvider = (props) => {
             }
         }
     };
-    
+
+
     // Cargar las pelis vistas del usuario desde el backend
     const cargarVistas = async (usuario) => {
         if (usuario) {
@@ -222,7 +227,7 @@ export const GlobalProvider = (props) => {
                 console.error("❌ Error cargando vistas:", error);
             }
         }
-    };
+    };    
 
 
     // Devuelve el proveedor del contexto, que comparte estado y funciones globalmente
