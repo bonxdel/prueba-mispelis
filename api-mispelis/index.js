@@ -94,7 +94,6 @@ servidor.post("/pelivista", async (peticion, respuesta) => {
     if (!usuario) {
         return respuesta.status(400).json({ error: "Usuario no autenticado" });
     }
-
     try {
         // Asocia la peli al usuario logueado
         peli.usuario = usuario;
@@ -108,23 +107,31 @@ servidor.post("/pelivista", async (peticion, respuesta) => {
 
 // Actualizar el tipo de una peli (favorita <-> vista)
 servidor.put("/cambiarcategoria/:id([0-9a-f]{24})", async (peticion, respuesta) => {
-    const { id } = peticion.params;
-    const { tipo } = peticion.body;
-
-    try {
-        const peli = await cambiarCategoria(id, tipo);
-
-        if (peli) {
-            respuesta.json(peli);
-        } else {
-            respuesta.status(404).json({ error: "Película no encontrada" });
-        }
-    } catch (error) {
-        console.error("❌ Error en el servidor al cambiar la categoría:", error);
-        respuesta.status(500).json({ error: "Error en el servidor" });
-    }
-});
-
+        const { tipo } = peticion.body;
+        const { id } = peticion.params;
+    
+        const cliente = await MongoClient.connect(urlMongo);
+        const db = cliente.db("mispelis");
+        const coleccion = db.collection("pelis");
+        
+        try {
+            const peliActualizada = await coleccion.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { tipo: tipo } }
+            );
+    
+            if (peliActualizada.modifiedCount === 1) {
+                const peli = await coleccion.findOne({ _id: new ObjectId(id) });
+                console.log("Peli actualizada:", peli); // Agregar log para verificar
+                respuesta.json(peli);
+            } else {
+                respuesta.status(404).send("Película no encontrada");        
+            }
+        } catch (error) {
+            console.error("Error al actualizar la categoría de la película:", error); // Agregar log de error
+            respuesta.status(500).send("Error al actualizar la categoría de la película");
+        };
+    });            
 
 // Middleware para eliminar pelis de la bd
 servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => {    
@@ -135,7 +142,6 @@ servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => 
         if (count === 0) {
             return respuesta.status(404).json({ error: "Peli no encontrada" });
         }
-
         respuesta.status(204).send();
     } catch (error) {
         respuesta.status(500).json({ error: "error en el servidor" });
@@ -163,11 +169,8 @@ servidor.post("/registro", async (peticion, respuesta) => {
         // Si no existe, lo insertamos
         const resultado = await usuarios.insertOne({ usuario, contraseña });
         conexion.close();
-
         respuesta.status(201).json({ mensaje: "Usuario creado con éxito", usuario });
-
     } catch (error) {
-        console.error("❌ Error en /registro:", error);
         respuesta.status(500).json({ error: "Error al crear el usuario" });
     }
 });

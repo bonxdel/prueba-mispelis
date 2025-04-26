@@ -11,7 +11,6 @@ async function conectar() {
     return { cliente, db };
 }
 
-
 // Exportación de la función asíncrona "guardarPeli" para usarla en el index.js
 // Permite guardar pelis en la bbdd de Mongo Atlas
 export async function guardarPeli(peli) {
@@ -56,7 +55,7 @@ export async function guardarPeli(peli) {
 // Función para cambiar la categoría de una peli (de "favorita" a "vista" o viceversa)
 export async function cambiarCategoria(peli) {
     // Determinar el nuevo tipo basado en el tipo actual
-    const nuevoTipo = peli.tipo.includes("favorita") ? "vista" : "favorita"; 
+    const nuevoTipo = peli.tipo === "favorita" ? "vista" : "favorita"; 
 
     // Despachar el cambio de categoría en el frontend
     dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: [nuevoTipo] } });
@@ -82,7 +81,6 @@ export async function cambiarCategoria(peli) {
         }
     }
 }
-
 
 // Función para borrar pelis de la bd
 export async function borrarPeli(id){

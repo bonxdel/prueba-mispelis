@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Importamos useNavigate para redirigir
+
 
 // Este componente nos permite registrar un nuevo usuario
 function Registro({ setUsuarioAutenticado }) {
@@ -6,12 +8,14 @@ function Registro({ setUsuarioAutenticado }) {
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
+  const navigate = useNavigate();
 
   // Función para validar el nombre de usuario y la contraseña
   const validarCampo = (campo) => {
     const caracteres = /^[a-zA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
     return caracteres.test(campo);
   };
+  
 
   // La constante "registro" es la acción de crear el usuario, que accede al endpoint de nuestra API
   const registro = async (evento) => {
@@ -54,10 +58,16 @@ function Registro({ setUsuarioAutenticado }) {
     }
   };
 
+
+  // Función para redirigir al formulario de login
+  const irALogin = () => {
+    navigate("/login"); // Redirige al componente Login
+  };
+
   return (
     <div className="pagina-registro">
       <div className="contenedor">
-        <h1 className="heading">Regístrate</h1>
+        <h1 className="heading">Crea tu cuenta</h1>
         <form onSubmit={registro}>
           <div className="campo">
             <label htmlFor="usuario">Nombre de usuario:</label>
@@ -81,8 +91,9 @@ function Registro({ setUsuarioAutenticado }) {
           </div>
           {error && <p style={{ color: "red" }}>{error}</p>}
           {exito && <p style={{ color: "green" }}>{exito}</p>}
-          <button className="btn" type="submit">Crear cuenta</button>
+          <button className="btn" type="submit">Regístrate</button>
         </form>
+        <button onClick={irALogin} className="btn">Accede</button>
       </div>
     </div>
   );

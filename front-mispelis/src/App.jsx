@@ -4,8 +4,8 @@ import Header from './componentes/Header'
 import Favoritas from './componentes/Favoritas'
 import Vistas from './componentes/Vistas'
 import Nueva from './componentes/Nueva'
-import Login from './componentes/Login' // Asegúrate de importar el componente Login
-import Registro from './componentes/Registro' // Asegúrate de importar el componente Registro
+import Login from './componentes/Login'
+import Registro from './componentes/Registro'
 import "./App.css"
 import "./lib/font-awesome/css/all.min.css"
 
