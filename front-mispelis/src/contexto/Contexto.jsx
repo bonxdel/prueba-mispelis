@@ -24,8 +24,13 @@ export const GlobalProvider = (props) => {
             localStorage.setItem("favoritas", JSON.stringify(estado.favoritas));
             localStorage.setItem("vistas", JSON.stringify(estado.vistas));
             localStorage.setItem("usuario", estado.usuario);
+        } else {
+            // El usuario está vacío, lo que significa que el localStorage debería resetearse
+            localStorage.removeItem("favoritas");
+            localStorage.removeItem("vistas");
+            localStorage.removeItem("usuario");
         }
-    }, [estado]);
+    }, [estado.usuario]); // Solo se ejecuta cuando cambia el usuario
 
     // Gestiona el login de usuarios y lo guarda a nivel local
     const loginUsuario = async (usuario) => {
