@@ -32,22 +32,27 @@ export const GlobalProvider = (props) => {
         }
     }, [estado.usuario]); // Solo se ejecuta cuando cambia el usuario
 
+    
     // Gestiona el login de usuarios y lo guarda a nivel local
     const loginUsuario = async (usuario) => {
-        // Limpiar los datos anteriores de localStorage
-        localStorage.removeItem("favoritas");
-        localStorage.removeItem("vistas");
-        localStorage.removeItem("usuario");
-    
-        // Guardamos los datos del nuevo usuario
-        dispatch({ type: "LOGIN", payload: usuario });
-        localStorage.setItem("usuario", usuario);
-    
-        // Cargamos las películas de este usuario
-        await cargarFavoritas(usuario);
-        await cargarVistas(usuario);
-    };
-    
+    // Limpiar los datos anteriores de localStorage
+    console.log("Limpiando localStorage...");
+    localStorage.removeItem("favoritas");
+    localStorage.removeItem("vistas");
+    localStorage.removeItem("usuario");
+
+    // Limpiar las listas de películas en el estado global
+    dispatch({ type: "CARGAR_FAVORITAS", payload: [] });
+    dispatch({ type: "CARGAR_VISTAS", payload: [] });
+
+    // Guardamos los datos del nuevo usuario
+    dispatch({ type: "LOGIN", payload: usuario });
+    localStorage.setItem("usuario", usuario);
+
+    // Cargamos las películas de este usuario
+    await cargarFavoritas(usuario);
+    await cargarVistas(usuario);
+};
 
     // Guarda una peli como "favorita"
     const nuevaFav = (peli) => {
