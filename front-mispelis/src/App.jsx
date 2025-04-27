@@ -13,16 +13,13 @@ import "./lib/font-awesome/css/all.min.css"
 import { GlobalProvider } from './contexto/Contexto'
 
 function App() {
-
-  // Comprueba si hay un usuario loggeado para mostrar la info completa de la app
   const [usuarioAutenticado, setUsuarioAutenticado] = useState(false)
 
   return (
-    <GlobalProvider>
-      <Router>
+    <Router>
+      <GlobalProvider>
         {usuarioAutenticado && <Header />}
         <Routes>
-          {/* Página principal - Si el usuario no está autenticado, va a Login */}
           <Route
             path="/"
             element={
@@ -34,7 +31,6 @@ function App() {
             }
           />
 
-          {/* Ruta de registro, accesible si el usuario no está autenticado */}
           <Route
             path="/registro"
             element={
@@ -46,7 +42,6 @@ function App() {
             }
           />
 
-          {/* Ruta de login, accesible si el usuario no está autenticado */}
           <Route
             path="/login"
             element={
@@ -58,28 +53,21 @@ function App() {
             }
           />
 
-          {/* Páginas protegidas - solo accesibles si el usuario está autenticado */}
           <Route
             path="/favoritas"
-            element={
-              usuarioAutenticado ? <Favoritas /> : <Navigate to="/" />
-            }
+            element={usuarioAutenticado ? <Favoritas /> : <Navigate to="/" />}
           />
           <Route
             path="/vistas"
-            element={
-              usuarioAutenticado ? <Vistas /> : <Navigate to="/" />
-            }
+            element={usuarioAutenticado ? <Vistas /> : <Navigate to="/" />}
           />
           <Route
             path="/nueva"
-            element={
-              usuarioAutenticado ? <Nueva /> : <Navigate to="/" />
-            }
+            element={usuarioAutenticado ? <Nueva /> : <Navigate to="/" />}
           />
         </Routes>
-      </Router>
-    </GlobalProvider>
+      </GlobalProvider>
+    </Router>
   )
 }
 

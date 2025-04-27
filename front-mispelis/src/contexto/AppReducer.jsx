@@ -30,7 +30,6 @@ export default (estado, accion) => {
                 vistas: [accion.payload, ...estado.vistas]
             };
         
-
         // Acción para eliminar una peli de "vistas"
         case "BORRAR_VISTA":
             return{
@@ -54,7 +53,6 @@ export default (estado, accion) => {
                     accion.payload,
                 ],
             };         
-
 
         // Acción para mover una peli de "favoritas" a "vistas"
         case "MOVER_A_VISTAS":
@@ -82,17 +80,35 @@ export default (estado, accion) => {
                 vistas: JSON.parse(localStorage.getItem("vistas")) || []
             }
 
+        // Carga de pelis "favoritas"
         case "CARGAR_FAVORITAS":
             return {
                 ...estado,
                 favoritas: accion.payload,
             };
+
+        // Carga de pelis "vistas"
         case "CARGAR_VISTAS":
             return {
                 ...estado,
                 vistas: accion.payload,
-            };    
-      
+            };
+        
+        // Acción para vaciar la info del usuario al recargar (logout)
+        case "LOGOUT":
+            return {
+                usuario: null,
+                favoritas: [],
+                vistas: [],
+            };
+
+        // Vaciado de pelis
+        case "RESET_PELIS":
+            return {
+                ...estado,
+                favoritas: [],
+                vistas: [],
+            };
 
         // En caso de no hacer ninguna acción, se devuelve el estado actual              
         default:

@@ -1,0 +1,382 @@
+Subject: [PATCH] fix cambio de usuario
+---
+Index: front-mispelis/src/contexto/AppReducer.jsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/front-mispelis/src/contexto/AppReducer.jsx b/front-mispelis/src/contexto/AppReducer.jsx
+--- a/front-mispelis/src/contexto/AppReducer.jsx	(revision cdfdeb503e454a08e82d69c36953f4a49d048d42)
++++ b/front-mispelis/src/contexto/AppReducer.jsx	(date 1745745729961)
+@@ -81,6 +81,19 @@
+                 favoritas: JSON.parse(localStorage.getItem("favoritas")) || [],
+                 vistas: JSON.parse(localStorage.getItem("vistas")) || []
+             }
++        case "LOGOUT":
++            return {
++                usuario: null,
++                favoritas: [],
++                vistas: [],
++            };
++
++        case "LIMPIAR_DATOS":
++            return {
++                ...estado,
++                favoritas: [],
++                vistas: [],
++            };
+ 
+         case "CARGAR_FAVORITAS":
+             return {
+Index: front-mispelis/src/contexto/Contexto.jsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/front-mispelis/src/contexto/Contexto.jsx b/front-mispelis/src/contexto/Contexto.jsx
+--- a/front-mispelis/src/contexto/Contexto.jsx	(revision cdfdeb503e454a08e82d69c36953f4a49d048d42)
++++ b/front-mispelis/src/contexto/Contexto.jsx	(date 1745747306682)
+@@ -1,236 +1,172 @@
+ import React, { createContext, useReducer, useEffect } from "react";
+ import AppReducer from "./AppReducer";
++import { useLocation } from "react-router-dom";
+ 
+-// Declaramos la constante que intenta obtener "usuario" (desde localStorage)
+-// Si no existe, asigna null como valor
+ const initialState = {
+-    usuario: localStorage.getItem("usuario") || null,
++    usuario: null,
+     favoritas: [],
+     vistas: [],
+ };
+ 
+-// Crea un contexto global llamado "Contexto" con el estado inicial
+-// Esto permite compartir datos entre componentes sin pasar los props de manera manual
+ export const Contexto = createContext(initialState);
+ 
+-// Proveedor global del contexto que gestiona el estado de la app y sus funciones
+ export const GlobalProvider = (props) => {
+-    // Se crea el estado global usando useReducer, basado en AppReducer y el estado inicial
+     const [estado, dispatch] = useReducer(AppReducer, initialState);
++    //const location = useLocation();
++
++    useEffect(() => {
++        // AQUI HAY QUE ARREGLARLO, EL LOGIN Y EL HOME SON LA MISMA RUTA !!!
++        if (location.pathname !== "/login") {
++            const usuarioGuardado = localStorage.getItem("usuario");
++            if (usuarioGuardado) {
++                dispatch({ type: "LOGIN", payload: usuarioGuardado });
++            }
++        } else {
++            // If on login page, clear any old user
++            localStorage.removeItem("usuario");
++        }
++    }, [location.pathname]);  // <- important, watch path changes!
+ 
+     useEffect(() => {
+-        // Verificar si los datos están en localStorage al cargar la app
+-        console.log("Usuario desde localStorage:", localStorage.getItem("usuario"));
+-        console.log("Favoritas desde localStorage:", localStorage.getItem("favoritas"));
+-        console.log("Vistas desde localStorage:", localStorage.getItem("vistas"));
+-        
+-        // Si hay un usuario en localStorage, actualiza el estado y carga las películas
+-        const usuario = localStorage.getItem("usuario");
+-        if (usuario) {
+-            dispatch({ type: "LOGIN", payload: usuario });
+-            cargarFavoritas(usuario);
+-            cargarVistas(usuario);
++        if (estado.usuario) {
++            cargarFavoritas(estado.usuario);
++            cargarVistas(estado.usuario);
+         }
+-}, []);
++    }, [estado.usuario]);
+ 
+-    // Gestiona el login de usuarios y lo guarda a nivel local
+     const loginUsuario = async (usuario) => {
+-        // Limpiar los datos anteriores
+-        localStorage.removeItem("favoritas");
+-        localStorage.removeItem("vistas");
+-        localStorage.removeItem("usuario");
+-
+-        // Guardar el nuevo usuario en localStorage
+-        localStorage.setItem("usuario", usuario);
+-
+-        // Actualizar el estado (esto resetea favoritas y vistas también)
+-        dispatch({ type: "LOGIN", payload: usuario });
++        try {
++            localStorage.setItem("usuario", usuario);
++            dispatch({ type: "LOGIN", payload: usuario });
+ 
+-        // Ahora recargar desde el backend
+-        await cargarFavoritas(usuario);
+-        await cargarVistas(usuario);
++            await Promise.all([
++                cargarFavoritas(usuario),
++                cargarVistas(usuario),
++            ]);
++        } catch (error) {
++            console.error("❌ Error during login:", error);
++        }
+     };
+-        
++
++    const logoutUsuario = () => {
++        localStorage.clear();
++        dispatch({ type: "LOGOUT" });
++    };
+ 
+-    // Guarda una peli como "favorita"
+-    const nuevaFav = (peli) => {
+-        if (estado.usuario) {
+-            fetch("http://localhost:4000/pelifavorita", {
++    const nuevaFav = async (peli) => {
++        if (!estado.usuario) return;
++        try {
++            const respuesta = await fetch("http://localhost:4000/pelifavorita", {
+                 method: "POST",
+                 headers: { "Content-Type": "application/json" },
+-                body: JSON.stringify({
+-                    ...peli,
+-                    usuario: estado.usuario,
+-                    tipo: "favorita",
+-                }),
+-            })
+-            .then(respuesta => respuesta.json()) 
+-            .then(datos => {
+-                dispatch({ type: "NUEVA_FAV", payload: datos });
+-            })
+-            .catch(error => {
+-                console.error("❌ Error al guardar peli:", error);
+-            });
++                body: JSON.stringify({ ...peli, usuario: estado.usuario, tipo: "favorita" }),
++            });
++            const datos = await respuesta.json();
++            dispatch({ type: "NUEVA_FAV", payload: datos });
++        } catch (error) {
++            console.error("❌ Error al guardar favorita:", error);
+         }
+     };
+ 
+-
+-    // Añade una nueva peli a "vistas"
+-    const nuevaVista = (peli) => {
+-        if (estado.usuario) {
+-            fetch("http://localhost:4000/pelivista", {
++    const nuevaVista = async (peli) => {
++        if (!estado.usuario) return;
++        try {
++            const respuesta = await fetch("http://localhost:4000/pelivista", {
+                 method: "POST",
+                 headers: { "Content-Type": "application/json" },
+-                body: JSON.stringify({
+-                    ...peli,
+-                    usuario: estado.usuario,
+-                    tipo: "vista",
+-                }),
+-            })
+-            .then(respuesta => respuesta.json()) 
+-            .then(datos => {
+-                dispatch({ type: "NUEVA_VISTA", payload: datos });
+-            })
+-            .catch(error => {
+-                console.error("❌ Error al guardar peli:", error);
+-            });
++                body: JSON.stringify({ ...peli, usuario: estado.usuario, tipo: "vista" }),
++            });
++            const datos = await respuesta.json();
++            dispatch({ type: "NUEVA_VISTA", payload: datos });
++        } catch (error) {
++            console.error("❌ Error al guardar vista:", error);
+         }
+     };
+ 
+-
+-    // Elimina una peli de tipo "favoritas"
+-    const borrarFav = (id) => {
+-        // Se despacha acción para quitarla del estado
+-        dispatch({ type: "BORRAR_FAV", payload: id });
+-
+-        // También se elimina del backend
+-        fetch(`http://localhost:4000/borrarpeli/${id}`, {
+-            method: "DELETE"
+-        })
+-        .then(respuesta => {
++    const borrarFav = async (id) => {
++        try {
++            const respuesta = await fetch(`http://localhost:4000/borrarpeli/${id}`, { method: "DELETE" });
+             if (respuesta.status === 204) {
+                 dispatch({ type: "BORRAR_FAV", payload: id });
+-            } else {
+-                return respuesta.json().then(error => console.log(error));
+             }
+-        })
+-        .catch(error => console.log(error));
++        } catch (error) {
++            console.error(error);
++        }
+     };
+ 
+-
+-    // Elimina una peli "vista"
+-    const borrarVista = (id) => {
+-        // Se despacha acción para quitarla del estado
+-        dispatch({ type: "BORRAR_VISTA", payload: id });
+-
+-        // También se elimina del backend
+-        fetch(`http://localhost:4000/borrarpeli/${id}`, {
+-            method: "DELETE"
+-        })
+-        .then(respuesta => {
++    const borrarVista = async (id) => {
++        try {
++            const respuesta = await fetch(`http://localhost:4000/borrarpeli/${id}`, { method: "DELETE" });
+             if (respuesta.status === 204) {
+                 dispatch({ type: "BORRAR_VISTA", payload: id });
+-            } else {
+-                return respuesta.json().then(error => console.log(error));
+             }
+-        })
+-        .catch(error => console.log(error));
++        } catch (error) {
++            console.error(error);
++        }
+     };
+ 
+-
+-    // Cambia el tipo de categoría de "vista" a "favorita"
+     const vistaToFav = async (peli) => {
+         const nuevoTipo = peli.tipo.includes("favorita") ? "vista" : "favorita";
+ 
+-        // Se gestiona el cambio de categoría en el frontend
+         dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: nuevoTipo } });
+ 
+         if (estado.usuario) {
+             try {
+-                // Hacer la petición PUT al servidor de forma asíncrona
+                 const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
+                     method: "PUT",
+                     headers: { "Content-Type": "application/json" },
+-                    body: JSON.stringify({
+-                        tipo: nuevoTipo, // Enviar solo el nuevo tipo, NO un array
+-                    }),
++                    body: JSON.stringify({ tipo: nuevoTipo }),
+                 });
+-
+-                // Verificar si la respuesta es JSON
+-                const datos = await respuesta.json().catch(() => {
+-                    throw new Error('La respuesta no es un JSON válido');
+-                });
+-
+-                // Actualizamos el estado con los datos del backend
+-                dispatch({ type: "MOVER_A_FAVS", payload: datos }); 
++                const datos = await respuesta.json();
++                dispatch({ type: "MOVER_A_FAVS", payload: datos });
+             } catch (error) {
+-                console.error("❌ Error al cambiar categoría de peli:", error);
++                console.error("❌ Error cambiando categoría:", error);
+             }
+         }
+     };
+ 
+-
+-    // Cambia el tipo de categoría de "favorita" a "vista"
+     const favToVista = async (peli) => {
+         const nuevoTipo = peli.tipo.includes("vista") ? "favorita" : "vista";
+ 
+-        // Se gestiona el cambio de categoría en el frontend
+         dispatch({ type: "MOVER_A_VISTAS", payload: { ...peli, tipo: nuevoTipo } });
+ 
+         if (estado.usuario) {
+             try {
+-                // Hacer la petición PUT al servidor de forma asíncrona
+                 const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
+                     method: "PUT",
+                     headers: { "Content-Type": "application/json" },
+-                    body: JSON.stringify({
+-                        tipo: nuevoTipo, // Enviar solo el nuevo tipo, NO un array
+-                    }),
++                    body: JSON.stringify({ tipo: nuevoTipo }),
+                 });
+-
+-                // Verificar si la respuesta es JSON
+-                const datos = await respuesta.json().catch(() => {
+-                    throw new Error('La respuesta no es un JSON válido');
+-                });
+-
+-                // Actualizamos el estado con los datos del backend
+-                dispatch({ type: "MOVER_A_VISTAS", payload: datos }); 
++                const datos = await respuesta.json();
++                dispatch({ type: "MOVER_A_VISTAS", payload: datos });
+             } catch (error) {
+-                console.error("❌ Error al cambiar categoría de peli:", error);
++                console.error("❌ Error cambiando categoría:", error);
+             }
+         }
+     };
+ 
+-
+-    // Cargar las pelis favoritas del usuario desde el backend
+     const cargarFavoritas = async (usuario) => {
+-        if (usuario) {
+-            try {
+-                const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/favorita`);
+-                const datos = await respuesta.json();
+-                dispatch({ type: "CARGAR_FAVORITAS", payload: datos });
+-            } catch (error) {
+-                console.error("❌ Error cargando favoritas:", error);
+-            }
++        if (!usuario) return;
++        try {
++            const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/favorita`);
++            const datos = await respuesta.json();
++            dispatch({ type: "CARGAR_FAVORITAS", payload: datos });
++        } catch (error) {
++            console.error("❌ Error cargando favoritas:", error);
+         }
+     };
+ 
+-
+-    // Cargar las pelis vistas del usuario desde el backend
+     const cargarVistas = async (usuario) => {
+-        if (usuario) {
+-            try {
+-                const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/vista`);
+-                const datos = await respuesta.json();
+-                dispatch({ type: "CARGAR_VISTAS", payload: datos });
+-            } catch (error) {
+-                console.error("❌ Error cargando vistas:", error);
+-            }
++        if (!usuario) return;
++        try {
++            const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/vista`);
++            const datos = await respuesta.json();
++            dispatch({ type: "CARGAR_VISTAS", payload: datos });
++        } catch (error) {
++            console.error("❌ Error cargando vistas:", error);
+         }
+-    };    
++    };
+ 
+-
+-    // Devuelve el proveedor del contexto, que comparte estado y funciones globalmente
+     return (
+         <Contexto.Provider
+             value={{
+@@ -238,6 +174,7 @@
+                 vistas: estado.vistas,
+                 usuario: estado.usuario,
+                 loginUsuario,
++                logoutUsuario,
+                 nuevaFav,
+                 nuevaVista,
+                 borrarFav,
+@@ -245,7 +182,7 @@
+                 vistaToFav,
+                 favToVista,
+                 cargarFavoritas,
+-                cargarVistas
++                cargarVistas,
+             }}
+         >
+             {props.children}

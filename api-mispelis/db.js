@@ -53,34 +53,39 @@ export async function guardarPeli(peli) {
 
 
 // Función para cambiar la categoría de una peli (de "favorita" a "vista" o viceversa)
-export async function cambiarCategoria(peli) {
-    // Determinar el nuevo tipo basado en el tipo actual
-    const nuevoTipo = peli.tipo === "favorita" ? "vista" : "favorita"; 
+export async function cambiarCategoria(id, nuevoTipo) {
+    let cliente;
 
-    // Despachar el cambio de categoría en el frontend
-    dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: [nuevoTipo] } });
+    try {
+        const conexion = await conectar(); // Conectamos a la base de datos
+        cliente = conexion.cliente;
+        const db = conexion.db;
+        const coleccion = db.collection("pelis");
 
-    if (estado.usuario) {
-        try {
-            // Hacer la petición PUT al servidor de forma asíncrona
-            const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                tipo: nuevoTipo, // Enviar solo el nuevo tipo, reemplazando el anterior
-                }),
-            });
+        // Actualizamos el tipo de la película
+        const resultado = await coleccion.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { tipo: nuevoTipo } }
+        );
 
-            // Esperar a que la respuesta sea convertida a JSON
-            const datos = await respuesta.json();
-
-            // Mostrar el resultado en consola y actualizar el estado
-            dispatch({ type: "MOVER_A_FAVS", payload: datos });
-        } catch (error) {
-            console.error("❌ Error al cambiar categoría de peli:", error);
+        // Si se modificó una película, la buscamos y la devolvemos
+        if (resultado.modifiedCount === 1) {
+            const peliActualizada = await coleccion.findOne({ _id: new ObjectId(id) });
+            await cliente.close(); // Cerramos conexión después de éxito
+            return peliActualizada;
+        } else {
+            await cliente.close(); // Cerramos conexión aunque no encuentre
+            return null;
         }
+    } catch (error) {
+        console.error("❌ Error al cambiar categoría:", error);
+        if (cliente) {
+            await cliente.close(); // Cerramos conexión en caso de error
+        }
+        return null;
     }
 }
+
 
 // Función para borrar pelis de la bd
 export async function borrarPeli(id){

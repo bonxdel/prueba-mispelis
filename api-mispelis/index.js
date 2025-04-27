@@ -106,32 +106,25 @@ servidor.post("/pelivista", async (peticion, respuesta) => {
 });
 
 
-// Actualizar el tipo de una peli (favorita <-> vista)
+// Middleware para cambiar la categoría de una peli
 servidor.put("/cambiarcategoria/:id([0-9a-f]{24})", async (peticion, respuesta) => {
-        const { tipo } = peticion.body;
-        const { id } = peticion.params;
-    
-        const cliente = await MongoClient.connect(urlMongo);
-        const db = cliente.db("mispelis");
-        const coleccion = db.collection("pelis");
-        
-        try {
-            const peliActualizada = await coleccion.updateOne(
-                { _id: new ObjectId(id) },
-                { $set: { tipo: tipo } }
-            );
-    
-            if (peliActualizada.modifiedCount === 1) {
-                const peli = await coleccion.findOne({ _id: new ObjectId(id) });
-                respuesta.json(peli);
-            } else {
-                respuesta.status(404).send("Película no encontrada");        
-            }
-        } catch (error) {
-            console.error("Error al actualizar la categoría de la película:", error); // Agregar log de error
-            respuesta.status(500).send("Error al actualizar la categoría de la película");
-        };
-    });            
+    const { tipo } = peticion.body;
+    const { id } = peticion.params;
+
+    try {
+        const peliActualizada = await cambiarCategoria(id, tipo);
+
+        if (!peliActualizada) {
+            return respuesta.status(404).json({ error: "Película no encontrada" });
+        }
+
+        respuesta.status(200).json(peliActualizada);
+    } catch (error) {
+        console.error("Error al cambiar la categoría:", error);
+        respuesta.status(500).json({ error: "Error en el servidor" });
+    }
+});
+           
 
 // Middleware para eliminar pelis de la bd
 servidor.delete("/borrarpeli/:id([0-9a-f]{24})", async (peticion, respuesta) => {    
