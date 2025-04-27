@@ -2,6 +2,7 @@ import React, { createContext, useReducer, useEffect } from "react"
 import AppReducer from "./AppReducer"
 import { useLocation } from "react-router-dom"
 
+
 // En el estado inicial el usuario no está (hay que hacer login)
 // LAs pelis favoritas y vistas son un array vacío hasta que se cargue la sesión
 const initialState = {
@@ -10,18 +11,23 @@ const initialState = {
     vistas: [],
 }
 
+
 // Crea un contexto global llamado "Contexto" con el estado inicial
 // Esto permite compartir datos entre componentes sin pasar los props de manera manual
 export const Contexto = createContext(initialState)
 
+
 // Proveedor global del contexto que gestiona el estado de la app y sus funciones
 export const GlobalProvider = (props) => {
+
 
     // Se crea el estado global usando useReducer, basado en AppReducer y el estado inicial
     const [estado, dispatch] = useReducer(AppReducer, initialState)
 
+
     // Hook que permite acceder al objeto donde sea invocado en otro punto de la app
     const location = useLocation()
+
 
     useEffect(() => {
         // Se ejecuta cada vez que se accede a "/login"
@@ -49,82 +55,102 @@ export const GlobalProvider = (props) => {
             }
     }, [estado.usuario]) // <-- este efecto depende del ESTADO del usuario, se ejecuta cuando cambia
 
+
     // Gestiona el login de usuarios y lo guarda a nivel local
     const loginUsuario = async (usuario) => {
-    try {
-        // Guarda el usuario en el localStorage
-        localStorage.setItem("usuario", usuario)
+        try {
+            // Guarda el usuario en el localStorage
+            localStorage.setItem("usuario", usuario)
 
-        // Despacha la acción de login al reducer para actualizar el estado global
-        dispatch({ type: "LOGIN", payload: usuario })
+            // Despacha la acción de login al reducer para actualizar el estado global
+            dispatch({ type: "LOGIN", payload: usuario })
 
-        // Carga las películas favoritas y vistas del usuario de manera simultánea
-        await Promise.all([
-            cargarFavoritas(usuario),
-            cargarVistas(usuario),
-        ])
-    } catch (error) {
-        console.error("Error al iniciar sesión:", error)
+            // Carga las películas favoritas y vistas del usuario de manera simultánea
+            await Promise.all([
+                cargarFavoritas(usuario),
+                cargarVistas(usuario),
+            ])
+        } catch (error) {
+            console.error(error)
+        }
     }
-}
-
     
 
+    // Gestiona el logout del usuario y vacía el localStorage
     const logoutUsuario = () => {
-            localStorage.clear()
-            dispatch({ type: "LOGOUT" })
-        }
+        localStorage.clear()
+        dispatch({ type: "LOGOUT" })
+    }
         
 
     // Guarda una peli como "favorita"
     const nuevaFav = async (peli) => {
+    // Si NO hay un usuario en el estado, no se realiza ninguna acción
         if (!estado.usuario) return
-        try{
-            const respuesta = await fetch("http://localhost:4000/pelifavorita", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...peli,
-                    usuario: estado.usuario,
-                    tipo: "favorita" }),
-                })
-                const datos = await respuesta.json()
-                dispatch({ type: "NUEVA_FAV", payload: datos })
-            } catch (error) {
-                console.error("❌ Error al guardar favorita:", error)
+
+        try {
+        // Solicitud POST a la API para guardar la película como favorita
+        const respuesta = await fetch("http://localhost:4000/pelifavorita", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...peli,
+                usuario: estado.usuario,
+                tipo: "favorita"
+            }),
+        })
+
+        // Convierte la respuesta de la API en formato JSON
+        const datos = await respuesta.json()
+
+        // Despacha una acción para agregar la nueva película favorita al estado global
+        dispatch({ type: "NUEVA_FAV", payload: datos })
+        } catch (error) {
+            console.error(error)
         }
     }
 
 
     // Añade una nueva peli a "vistas"
     const nuevaVista = async (peli) => {
+        // Si NO hay un usuario en el estado, no se realiza ninguna acción
         if (!estado.usuario) return
-        try{
+
+        try {
+            // Solicitud POST a la API para guardar la película como vista
             const respuesta = await fetch("http://localhost:4000/pelivista", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...peli,
                     usuario: estado.usuario,
-                    tipo: "vista" }),
-                })
-                const datos = await respuesta.json()
-                dispatch({ type: "NUEVA_VISTA", payload: datos })
-            } catch (error) {
-                console.error("❌ Error al guardar vista:", error)
+                    tipo: "vista"
+                }),
+            })
+
+            // Convierte la respuesta de la API en formato JSON
+            const datos = await respuesta.json()
+
+            // Despacha una acción para agregar la nueva película vista al estado global
+            dispatch({ type: "NUEVA_VISTA", payload: datos })
+        } catch (error) {
+            console.error(error)
         }
     }
 
-
-    // Elimina una peli de tipo "favoritas"
+    // Elimina una peli de tipo "favorita"
     const borrarFav = async (id) => {
         try {
-            const respuesta = await fetch(`http://localhost:4000/borrarpeli/${id}`,
-            {method: "DELETE"})
+            // Realiza una solicitud DELETE a la API para eliminar la película favorita con el id
+            const respuesta = await fetch(`http://localhost:4000/borrarpeli/${id}`, {
+                method: "DELETE",
+            })
+
+            // Si la respuesta es 204, despacha la acción para eliminar la película del estado global
             if (respuesta.status === 204) {
                 dispatch({ type: "BORRAR_FAV", payload: id })
             }
-        } catch(error) {
+        } catch (error) {
             console.error(error)
         }
     }
@@ -133,12 +159,16 @@ export const GlobalProvider = (props) => {
     // Elimina una peli "vista"
     const borrarVista = async (id) => {
         try {
-            const respuesta = await fetch(`http://localhost:4000/borrarpeli/${id}`,
-            {method: "DELETE"})
+            // Realiza una solicitud DELETE a la API para eliminar la película vista con el id
+            const respuesta = await fetch(`http://localhost:4000/borrarpeli/${id}`, {
+                method: "DELETE",
+            })
+
+            // Si la respuesta es 204, despacha la acción para eliminar la película del estado global
             if (respuesta.status === 204) {
                 dispatch({ type: "BORRAR_VISTA", payload: id })
             }
-        } catch(error) {
+        } catch (error) {
             console.error(error)
         }
     }
@@ -148,29 +178,29 @@ export const GlobalProvider = (props) => {
     const vistaToFav = async (peli) => {
         const nuevoTipo = peli.tipo.includes("favorita") ? "vista" : "favorita"
 
-        // Se gestiona el cambio de categoría en el frontend
+        // Se gestiona el cambio de categoría según el reducer
         dispatch({ type: "MOVER_A_FAVS", payload: { ...peli, tipo: nuevoTipo } })
 
         if (estado.usuario) {
             try {
-                // Hacer la petición PUT al servidor de forma asíncrona
+                // Hace la petición PUT al servidor de forma asíncrona
                 const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        tipo: nuevoTipo, // Enviar solo el nuevo tipo, NO un array
+                        tipo: nuevoTipo,
                     }),
                 })
 
-                // Verificar si la respuesta es JSON
+                // Verifica si la respuesta es JSON
                 const datos = await respuesta.json().catch(() => {
                     throw new Error('La respuesta no es un JSON válido')
                 })
 
-                // Actualizamos el estado con los datos del backend
+                // Actualiza el estado con los datos del backend
                 dispatch({ type: "MOVER_A_FAVS", payload: datos }) 
             } catch (error) {
-                console.error("❌ Error al cambiar categoría de peli:", error)
+                console.error(error)
             }
         }
     }
@@ -180,57 +210,71 @@ export const GlobalProvider = (props) => {
     const favToVista = async (peli) => {
         const nuevoTipo = peli.tipo.includes("vista") ? "favorita" : "vista"
 
-        // Se gestiona el cambio de categoría en el frontend
+        // Se gestiona el cambio de categoría según el reducer
         dispatch({ type: "MOVER_A_VISTAS", payload: { ...peli, tipo: nuevoTipo } })
 
         if (estado.usuario) {
             try {
-                // Hacer la petición PUT al servidor de forma asíncrona
+                // Hace la petición PUT al servidor de forma asíncrona
                 const respuesta = await fetch(`http://localhost:4000/cambiarcategoria/${peli._id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        tipo: nuevoTipo, // Enviar solo el nuevo tipo, NO un array
+                        tipo: nuevoTipo,
                     }),
                 })
 
-                // Verificar si la respuesta es JSON
+                // Verifica si la respuesta es JSON
                 const datos = await respuesta.json().catch(() => {
                     throw new Error('La respuesta no es un JSON válido')
                 })
 
-                // Actualizamos el estado con los datos del backend
+                // Actualiza el estado con los datos del backend
                 dispatch({ type: "MOVER_A_VISTAS", payload: datos }) 
             } catch (error) {
-                console.error("❌ Error al cambiar categoría de peli:", error)
+                console.error(error)
             }
         }
     }
 
 
-    // Cargar las pelis favoritas del usuario desde el backend
+    // Carga de las pelis "favoritas" del usuario desde el backend
     const cargarFavoritas = async (usuario) => {
+        // Si NO hay un usuario en el estado, no se realiza ninguna acción
         if (!usuario) return
+
         try {
-            const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/favorita`)
-            const datos = await respuesta.json()
-            dispatch({ type: "CARGAR_FAVORITAS", payload: datos })
+        // Realiza una solicitud GET a la API para obtener las películas "favoritas" del usuario
+        const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/favorita`)
+
+        // Convierte la respuesta de la API en formato JSON
+        const datos = await respuesta.json()
+
+        // Despacha la acción para cargar las películas "favoritas" en el estado global
+        dispatch({ type: "CARGAR_FAVORITAS", payload: datos })
         } catch (error) {
-            console.error("❌ Error cargando favoritas:", error)
-         }
+            console.error(error)
+        }
     }
 
 
-    // Cargar las pelis vistas del usuario desde el backend
+    // Carga de las pelis "vistas" del usuario desde el backend
     const cargarVistas = async (usuario) => {
+        // Si NO hay un usuario en el estado, no se realiza ninguna acción
         if (!usuario) return
+
         try {
+            // Realiza una solicitud GET a la API para obtener las películas "vistas" del usuario
             const respuesta = await fetch(`http://localhost:4000/mispelis/${usuario}/vista`)
+
+            // Convierte la respuesta de la API en formato JSON
             const datos = await respuesta.json()
+
+            // Despacha la acción para cargar las películas "vistas" en el estado global
             dispatch({ type: "CARGAR_VISTAS", payload: datos })
         } catch (error) {
-            console.error("❌ Error cargando vistas:", error)
-         }
+            console.error(error)
+        }
     }    
 
 

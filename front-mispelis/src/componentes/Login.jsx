@@ -8,9 +8,10 @@ function Login({ setUsuarioAutenticado }) {
   const [error, setError] = useState("");
   const navigate = useNavigate(); // Usamos useNavigate para redirigir
 
-  // La constante "loggearse" es la acción del login, si accedemos al endpoint de nuestra API está autenticado
+
+  // La constante "acceder" es la acción del login, si accedemos al endpoint de nuestra API está autenticado
   // Se establecen errores en caso de ser incorrectos usuario o contraseña y en caso de no poder conectarse al servidor
-  const loggearse = async (evento) => {
+  const acceder = async (evento) => {
     evento.preventDefault();
     setError("");
 
@@ -37,16 +38,18 @@ function Login({ setUsuarioAutenticado }) {
     }
   };
 
+
   // Función para redirigir al formulario de registro
   const irARegistro = () => {
-    navigate("/registro"); // Redirige al componente Registro
+    navigate("/registro");
   };
 
+  
   return (
     <div className="pagina-login">
       <div className="contenedor">
         <h1 className="heading">Iniciar sesión</h1>
-        <form onSubmit={loggearse}>
+        <form onSubmit={acceder}>
           <div className="campo">
             <label htmlFor="usuario">Nombre de usuario:</label>
             <input

@@ -10,6 +10,7 @@ function Registro({ setUsuarioAutenticado }) {
   const [exito, setExito] = useState("");
   const navigate = useNavigate();
 
+
   // Función para validar el nombre de usuario y la contraseña
   const validarCampo = (campo) => {
     const caracteres = /^[a-zñA-Z0-9-_]+$/; // Solo permite letras, números, guiones y guiones bajos
@@ -23,18 +24,20 @@ function Registro({ setUsuarioAutenticado }) {
     setError("");
     setExito("");
 
-    // Validar que el nombre de usuario y la contraseña cumplan con los requisitos
+    // Valida que el nombre de usuario cumpla los requisitos
     if (!validarCampo(usuario)) {
       setError("El nombre de usuario solo puede contener letras, números, '-' y '_'");
       return;
     }
     
+    // Valida que la contraseña cumpla los requisitos
     if (!validarCampo(pass)) {
       setError("La contraseña solo puede contener letras, números, '-' y '_'.");
       return;
     }
 
     try {
+      // Realiza una solicitud POST a la API para registrar un nuevo usuario
       const respuesta = await fetch("http://localhost:4000/registro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,8 +64,9 @@ function Registro({ setUsuarioAutenticado }) {
 
   // Función para redirigir al formulario de login
   const irALogin = () => {
-    navigate("/login"); // Redirige al componente Login
+    navigate("/login");
   };
+
 
   return (
     <div className="pagina-registro">

@@ -3,7 +3,7 @@ import { Contexto } from "../contexto/Contexto"
 import { Cartel } from "./Cartel"
 
 function Vistas(){
-    // Se invoca la constante "vistas" del contexto global
+    // Extrae los valores "vistas", "cargarVistas" y "usuario" del contexto global
     const {vistas, cargarVistas, usuario} = useContext(Contexto)
 
     useEffect(() => {
